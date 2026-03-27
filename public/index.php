@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // Cargar clases (asegúrate que las rutas sean así)
+require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/Database.php';
 require_once __DIR__ . '/../includes/BrevoMailer.php';
 require_once __DIR__ . '/../includes/Auth.php';
