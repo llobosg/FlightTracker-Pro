@@ -7,9 +7,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>FlightTracker Pro</title>
-  <link rel="manifest" href="/public/manifest.json">
-  <link rel="apple-touch-icon" href="/public/assets/images/icons/icon-192x192.png">
-  <link rel="stylesheet" href="/public/assets/css/styles.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/assets/images/icons/icon-192x192.png">
+  <link rel="stylesheet" href="/assets/css/styles.css">
   <style>
     /* Estilos críticos inline para carga rápida */
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -111,14 +111,15 @@
   <script>
     // Registrar Service Worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/public/sw.js')
+      navigator.serviceWorker.register('/sw.js')
         .then(reg => console.log('SW registrado:', reg.scope))
         .catch(err => console.log('SW error:', err));
     }
 
     // Estado de la app
     let currentUser = null;
-    const API = window.location.origin + '/api/v1';
+    // Asumiendo que tu router en index.php usa '/api/register'
+    const API = window.location.origin + '/api'; 
 
     // Navegación entre vistas
     function showView(viewId) {
