@@ -1,0 +1,19 @@
+{
+  "name": "llobosg/gestionafv",
+  "description": "FlightTracker Pro",
+  "type": "project",
+  "require": {
+    "php": "^8.2",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*",
+    "tecnickcom/tcpdf": "^6.11"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Luis Lobos",
+      "email": "llobos@gltcomex.com"
+    }
+  ]
+  
+}
