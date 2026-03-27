@@ -1,5 +1,3 @@
-# Crear .gitignore para excluir archivos sensibles y temporales
-cat > .gitignore << 'EOF'
 # Variables de entorno y credenciales
 .env
 *.env.local
@@ -14,7 +12,7 @@ Thumbs.db
 cache/
 temp/
 
-# Dependencias (si usas Composer)
+# Dependencias de Composer
 /vendor/
 composer.lock
 
@@ -31,4 +29,3 @@ composer.lock
 # Uploads temporales
 uploads/temp/*
 !uploads/temp/.gitkeep
-EOF
