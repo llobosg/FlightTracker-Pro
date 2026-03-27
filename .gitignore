@@ -1,0 +1,34 @@
+# Crear .gitignore para excluir archivos sensibles y temporales
+cat > .gitignore << 'EOF'
+# Variables de entorno y credenciales
+.env
+*.env.local
+*.env.production
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Logs y caché
+*.log
+cache/
+temp/
+
+# Dependencias (si usas Composer)
+/vendor/
+composer.lock
+
+# IDE y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos de base de datos locales (opcional)
+*.sql
+!.sql/schema.sql
+
+# Uploads temporales
+uploads/temp/*
+!uploads/temp/.gitkeep
+EOF
