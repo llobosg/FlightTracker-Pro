@@ -17,12 +17,20 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/Auth.php';
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-// Ajustar ruta si estamos en subcarpeta local o raíz en Railway
-$basePath = '/public'; 
-if (strpos($uri, $basePath) === 0) {
-    $uri = substr($uri, strlen($basePath));
+
+// Limpieza de ruta para evitar problemas de doble slash o ruta vacía
+if ($uri === '/' || $uri === '/index.php' || $uri === '') {
+    header("Content-Type: text/html; charset=utf-8");
+    // Servir el archivo HTML directamente
+    if (file_exists(__DIR__ . '/assets/views/pwa.html')) {
+        echo file_get_contents(__DIR__ . '/assets/views/pwa.html');
+        exit();
+    } else {
+        // Fallback si no existe el HTML (para debug)
+        echo "<h1>FlightTracker API Online</h1><p>El frontend no se encontró en assets/views/pwa.html</p>";
+        exit();
+    }
 }
-if ($uri === '') $uri = '/';
 
 // Rutas API
 if (strpos($uri, '/api/') === 0) {
