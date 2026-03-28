@@ -1,34 +1,191 @@
 /* public/assets/css/styles.css */
+
+/* Fondo de Aeropuerto */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #0f172a; /* Color de fondo por defecto */
+    /* Imagen de fondo de aeropuerto (URL externa gratuita de alta calidad) */
+    background: url('https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
+    background-size: cover;
     color: #f1f5f9;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
-.hidden { display: none; }
-.card {
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 16px;
+
+/* Efecto Glassmorphism Base */
+.glass-bar, .glass-card, .fab-button {
+    background: rgba(15, 23, 42, 0.65); /* Azul oscuro semitransparente */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
-.btn {
-    background: linear-gradient(135deg, #3b82f6, #6366f1);
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
-    width: 100%;
+
+/* Barra Superior */
+.top-bar {
+    position: sticky;
+    top: 20px;
+    margin: 0 15px;
+    height: 60px;
+    border-radius: 30px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    /* Degradé Celeste a Rosado en el borde */
+    border: 1px solid transparent;
+    background-image: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.65)), 
+                      linear-gradient(90deg, #22d3ee, #f472b6);
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+    z-index: 100;
+}
+
+.nav-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: #fff;
+    opacity: 0.8;
+}
+
+/* Contenedor de Fichas */
+.stats-container {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 15px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    flex: 1;
+    min-width: 100px;
+    padding: 15px;
+    border-radius: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.stat-label { font-size: 0.75rem; color: #cbd5e1; margin-bottom: 5px; }
+.stat-value { font-size: 1.5rem; font-weight: bold; }
+.highlight-cyan { color: #22d3ee; text-shadow: 0 0 10px rgba(34, 211, 238, 0.5); }
+.highlight-gold { color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
+.trip-list { font-size: 0.7rem; color: #94a3b8; line-height: 1.4; }
+
+/* Sidebar Aerolíneas */
+.airlines-sidebar {
+    position: absolute;
+    right: 20px;
+    top: 140px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: right;
+}
+.airline-link {
+    font-size: 0.8rem;
     font-weight: bold;
+    color: rgba(255,255,255,0.7);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
     cursor: pointer;
 }
-.input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    border: 1px solid #334155;
-    background: #1e293b;
-    color: white;
+.airline-link:hover { color: #fff; }
+
+/* Barra Inferior Settings */
+.bottom-bar {
+    margin: 20px 15px;
+    padding: 15px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
+.settings-title { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; }
+.toggles label {
+    display: block;
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    margin: 5px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Botón Flotante (FAB) */
+.fab-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid rgba(255,255,255,0.2);
+    transition: transform 0.2s;
+}
+.fab-button:active { transform: scale(0.95); }
+.fab-button svg { width: 30px; height: 30px; stroke: #fff; margin-bottom: 2px; }
+.fab-button span { font-size: 0.6rem; font-weight: bold; }
+
+/* Lista de Vuelos */
+.flights-list-container {
+    padding: 20px 15px 100px 15px; /* Padding bottom extra para el FAB */
+}
+.flight-card {
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.flight-header { display: flex; align-items: center; gap: 15px; }
+.airline-logo { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
+.flight-info { display: flex; flex-direction: column; }
+.flight-number { font-size: 0.8rem; color: #94a3b8; }
+.flight-route { font-size: 1rem; font-weight: bold; color: #fff; }
+.flight-time { font-size: 0.85rem; color: #cbd5e1; }
+
+.flight-actions { display: flex; align-items: center; gap: 10px; }
+.checkin-badge {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+}
+.check-icon { font-weight: bold; }
+.seat-number { font-size: 0.9rem; font-weight: bold; color: #fff; }
+.btn-checkin {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.btn-logout {
+    width: 100%;
+    padding: 15px;
+    background: rgba(239, 68, 68, 0.8);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    margin-top: 20px;
+    backdrop-filter: blur(5px);
+}
+
+/* Utilidad para ocultar/mostrar */
+.hidden { display: none !important; }
