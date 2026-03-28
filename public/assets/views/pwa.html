@@ -98,99 +98,115 @@
       </p>
     </div>
 
-    <!-- Dashboard Principal -->
     <div id="dashboard" class="hidden">
-      
-      <!-- Barra Superior de Navegación -->
+      <!-- 1. Barra Superior (Navegación) -->
       <div class="glass-bar top-bar">
-        <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
-        <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></div>
-        <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
-        <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
-      </div>
-
-      <!-- Fichas de Estadísticas -->
-      <div class="stats-container">
-        <div class="glass-card stat-card">
-          <span class="stat-label">Total Flights Booked</span>
-          <span class="stat-value highlight-cyan">12</span>
+        <!-- Calendario (Click abre Vuelos) -->
+        <div class="nav-icon" onclick="showFlightsView()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
         </div>
-        <div class="glass-card stat-card">
-          <span class="stat-label">Upcoming Trips</span>
-          <div class="trip-list">
-            <div>SCL → LIM • Jun 14</div>
-            <div>LIM → MIA • Jun 28</div>
-          </div>
+        <!-- Notificaciones -->
+        <div class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
         </div>
-        <div class="glass-card stat-card">
-          <span class="stat-label">Miles Traveled</span>
-          <span class="stat-value highlight-gold">42,890</span>
+        <!-- Perfil -->
+        <div class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <!-- Settings -->
+        <div class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
         </div>
       </div>
 
-      <!-- Logos Aerolíneas (Flotantes a la derecha) -->
-      <div class="airlines-sidebar">
-        <div class="airline-link">LATAM</div>
-        <div class="airline-link">Sky Airline</div>
-        <div class="airline-link">JetSmart</div>
-      </div>
-
-      <!-- Barra Inferior de Notificaciones -->
-      <div class="glass-bar bottom-bar">
-        <span class="settings-title">Notification Settings</span>
-        <div class="toggles">
-          <label>Email Alerts <input type="checkbox" checked></label>
-          <label>Push Notifications <input type="checkbox" checked></label>
-          <label>SMS Reminders <input type="checkbox"></label>
-        </div>
-      </div>
-
-      <!-- Botón Flotante New Booking -->
-      <button class="fab-button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-        <span>+ New Booking</span>
-      </button>
-
-      <!-- Lista de Vuelos Próximos (Segundo Mockup) -->
-      <div class="flights-list-container">
-        <h3 style="color:white; margin-bottom:15px;">Próximos Vuelos</h3>
+      <!-- 2. Contenedor Principal (Fichas + Botón Burbuja) -->
+      <div class="main-content">
         
-        <!-- Ficha de Vuelo 1 -->
-        <div class="glass-card flight-card">
-          <div class="flight-header">
-            <!-- Logo simulado LATAM -->
-            <div class="airline-logo" style="background: #005587; color: white; font-weight:bold; padding:5px;">LATAM</div>
-            <div class="flight-info">
-              <div class="flight-number">LA600</div>
-              <div class="flight-route"><strong>Santiago</strong> <span style="font-size:0.8em">→ Calama</span></div>
-              <div class="flight-time">07:45 AM</div>
-            </div>
+        <!-- Fichas Izquierda (70%) -->
+        <div class="stats-group">
+          <div class="glass-card stat-card large">
+            <span class="stat-label">Total Flights Booked</span>
+            <span class="stat-value highlight-cyan">12</span>
           </div>
-          <div class="flight-actions">
-            <div class="checkin-badge">
-              <span class="check-icon">✓</span> Checked In
+          <div class="glass-card stat-card large">
+            <span class="stat-label">Upcoming Trips</span>
+            <div class="trip-list">
+              <div>SCL → LIM • Jun 14</div>
+              <div>LIM → MIA • Jun 28</div>
             </div>
-            <div class="seat-number">12A</div>
           </div>
         </div>
 
-        <!-- Ficha de Vuelo 2 -->
-        <div class="glass-card flight-card">
-          <div class="flight-header">
-            <div class="airline-logo" style="background: #ff6600; color: white; font-weight:bold; padding:5px;">Sky</div>
-            <div class="flight-info">
-              <div class="flight-number">H2501</div>
-              <div class="flight-route"><strong>Calama</strong> <span style="font-size:0.8em">→ Santiago</span></div>
-              <div class="flight-time">18:30 PM</div>
-            </div>
+        <!-- Botón Burbuja Derecha (30%) -->
+        <div class="bubble-container">
+          <button class="bubble-btn" onclick="alert('Función: Nuevo Reserva')">
+            <!-- Icono Avión Subiendo -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+          <span class="bubble-label">New<br>Booking</span>
+        </div>
+      </div>
+
+      <!-- 3. Barra Inferior (Settings) -->
+      <div class="glass-bar bottom-bar">
+        <div class="settings-header">Notification Settings</div>
+        <div class="toggles-row">
+          <div class="toggle-item">
+            <span>Email Alerts</span>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
           </div>
-          <div class="flight-actions">
-            <button class="btn-checkin">Check-in</button>
-            <div class="seat-number">--</div>
+          <div class="toggle-item">
+            <span>Push Notifications</span>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+          </div>
+          <div class="toggle-item">
+            <span>WhatsApp Reminder</span>
+            <label class="switch"><input type="checkbox"><span class="slider"></span></label>
           </div>
         </div>
       </div>
 
+      <!-- 4. Vista Modal de Próximos Vuelos (Oculta por defecto) -->
+      <div id="flights-view" class="modal-view hidden">
+        <div class="modal-header">
+          <h2>Próximos Vuelos</h2>
+          <button class="close-btn" onclick="hideFlightsView()">✕</button>
+        </div>
+        <div class="flights-list">
+          <!-- Vuelo 1 -->
+          <div class="glass-card flight-card">
+            <div class="flight-header">
+              <div class="airline-logo" style="background:#005587; color:white;">LATAM</div>
+              <div class="flight-info">
+                <div class="flight-number">LA600</div>
+                <div class="flight-route"><strong>Santiago</strong> → Calama</div>
+                <div class="flight-time">07:45 AM</div>
+              </div>
+            </div>
+            <div class="flight-actions">
+              <div class="checkin-badge"><span class="check-icon">✓</span> Checked In</div>
+              <div class="seat-number">12A</div>
+            </div>
+          </div>
+          <!-- Vuelo 2 -->
+          <div class="glass-card flight-card">
+            <div class="flight-header">
+              <div class="airline-logo" style="background:#ff6600; color:white;">Sky</div>
+              <div class="flight-info">
+                <div class="flight-number">H2501</div>
+                <div class="flight-route"><strong>Calama</strong> → Santiago</div>
+                <div class="flight-time">18:30 PM</div>
+              </div>
+            </div>
+            <div class="flight-actions">
+              <button class="btn-checkin">Check-in</button>
+              <div class="seat-number">--</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón Logout (Opcional, quizás mover a perfil) -->
       <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
     </div>
 
@@ -303,6 +319,15 @@
     // Auto-login si hay token
     if (localStorage.getItem('token')) {
       showView('dashboard');
+    }
+
+    // Funciones para mostrar/ocultar la vista de vuelos
+    function showFlightsView() {
+        document.getElementById('flights-view').classList.remove('hidden');
+    }
+
+    function hideFlightsView() {
+        document.getElementById('flights-view').classList.add('hidden');
     }
   </script>
 </body>

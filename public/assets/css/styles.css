@@ -187,5 +187,225 @@ body {
     backdrop-filter: blur(5px);
 }
 
+/* ... (Mantén el body y fondo anterior) ... */
+
+/* Contenedor Principal para ajustar espacio */
+.main-content {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 15px;
+    gap: 15px;
+    align-items: stretch;
+    height: auto;
+}
+
+/* Grupo de Fichas (70%) */
+.stats-group {
+    flex: 7;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.stat-card.large {
+    flex: 1;
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100px;
+}
+
+/* Botón Burbuja (30%) */
+.bubble-container {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.bubble-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.bubble-btn svg {
+    width: 40px;
+    height: 40px;
+    stroke: #fff;
+    filter: drop-shadow(0 0 5px rgba(255,255,255,0.8));
+}
+
+.bubble-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+}
+
+.bubble-label {
+    margin-top: 10px;
+    font-size: 0.7rem;
+    color: #fff;
+    text-align: center;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+/* Barra Inferior (Idéntica a la superior) */
+.bottom-bar {
+    position: fixed; /* Fija abajo */
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    height: auto;
+    min-height: 70px;
+    border-radius: 30px;
+    padding: 15px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    z-index: 100;
+    /* Mismo degradé de borde que la superior */
+    border: 1px solid transparent;
+    background-image: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.65)), 
+                      linear-gradient(90deg, #22d3ee, #f472b6);
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+}
+
+.settings-header {
+    font-weight: bold;
+    font-size: 0.85rem;
+    color: #fff;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.toggles-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.toggle-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+}
+
+.toggle-item span {
+    font-size: 0.65rem;
+    color: #cbd5e1;
+    text-align: center;
+}
+
+/* Switch Toggle Style */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #334155;
+    transition: .4s;
+    border-radius: 34px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 1px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: #3b82f6;
+    border-color: #60a5fa;
+}
+input:checked + .slider:before {
+    transform: translateX(14px);
+}
+
+/* Modal de Vuelos */
+.modal-view {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(15px);
+    z-index: 200;
+    padding: 20px;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    color: white;
+}
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.flights-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-bottom: 50px;
+}
+
+.flight-card {
+    padding: 15px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+/* ... (Mantener estilos de flight-card anteriores) ... */
+
+.btn-logout {
+    width: 90%;
+    margin: 20px auto;
+    display: block;
+    /* ... estilos anteriores ... */
+}
+
 /* Utilidad para ocultar/mostrar */
 .hidden { display: none !important; }
