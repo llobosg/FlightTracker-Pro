@@ -99,43 +99,143 @@
     </div>
 
     <div id="dashboard" class="hidden">
-      <!-- 1. Barra Superior (Navegación) -->
-      <div class="glass-bar top-bar">
-        <!-- Calendario (Click abre Vuelos) -->
-        <div class="nav-icon" onclick="showFlightsView()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-        </div>
-        <!-- Notificaciones -->
-        <div class="nav-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        </div>
-        <!-- Perfil -->
-        <div class="nav-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        </div>
-        <!-- Settings -->
-        <div class="nav-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+  
+  <!-- 1. Barra Superior (Navegación) -->
+  <div class="glass-bar top-bar">
+    <!-- Calendario: Abre Modal Vuelos -->
+    <div class="nav-icon" onclick="toggleModal('modal-flights')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+    </div>
+    <!-- Campana: Abre Modal Notificaciones/Semana -->
+    <div class="nav-icon" onclick="toggleModal('modal-week')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+    </div>
+    <!-- Perfil (Placeholder) -->
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    </div>
+    <!-- Settings (Placeholder) -->
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </div>
+  </div>
+
+  <!-- 2. Contenido Principal (Fichas + Burbuja) -->
+  <div class="main-content">
+    <div class="stats-group">
+      <div class="glass-card stat-card large">
+        <span class="stat-label">Total Flights Booked</span>
+        <span class="stat-value highlight-cyan">12</span>
+      </div>
+      <div class="glass-card stat-card large">
+        <span class="stat-label">Upcoming Trips</span>
+        <div class="trip-list">
+          <div>SCL → LIM • Jun 14</div>
+          <div>LIM → MIA • Jun 28</div>
         </div>
       </div>
+    </div>
+    <div class="bubble-container">
+      <button class="bubble-btn" onclick="toggleModal('modal-booking')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
+      <span class="bubble-label">New<br>Booking</span>
+    </div>
+  </div>
 
-      <!-- 2. Contenedor Principal (Fichas + Botón Burbuja) -->
-      <div class="main-content">
-        
-        <!-- Fichas Izquierda (70%) -->
-        <div class="stats-group">
-          <div class="glass-card stat-card large">
-            <span class="stat-label">Total Flights Booked</span>
-            <span class="stat-value highlight-cyan">12</span>
-          </div>
-          <div class="glass-card stat-card large">
-            <span class="stat-label">Upcoming Trips</span>
-            <div class="trip-list">
-              <div>SCL → LIM • Jun 14</div>
-              <div>LIM → MIA • Jun 28</div>
-            </div>
-          </div>
+  <!-- 3. Barra Inferior (Settings) -->
+  <div class="glass-bar bottom-bar">
+    <div class="settings-header">Notification Settings</div>
+    <div class="toggles-row">
+      <div class="toggle-item"><span>Email</span><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+      <div class="toggle-item"><span>Push</span><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+      <div class="toggle-item"><span>WhatsApp</span><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+    </div>
+  </div>
+
+  <!-- ================= MODALES (SUBMODALS) ================= -->
+
+  <!-- Modal 1: Próximos Vuelos (Calendario) -->
+  <div id="modal-flights" class="sub-modal hidden">
+    <div class="modal-header">
+      <span>Mis Vuelos</span>
+      <button class="icon-btn-home" onclick="closeAllModals()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      </button>
+    </div>
+    <div class="modal-content-scroll">
+      <!-- Ficha Vuelo 1 -->
+      <div class="flight-row">
+        <div class="airline-logo-small" style="background:#005587; color:white;">LATAM</div>
+        <div class="flight-details">
+          <div class="flight-route-bold">Santiago <span style="color:#cbd5e1">→</span> Calama</div>
+          <div class="flight-time-small">07:45 AM • LA600</div>
         </div>
+        <div class="flight-status">
+          <div class="badge-checked">✓ Checked In</div>
+          <div class="seat-small">12A</div>
+        </div>
+      </div>
+      <!-- Ficha Vuelo 2 -->
+      <div class="flight-row">
+        <div class="airline-logo-small" style="background:#ff6600; color:white;">Sky</div>
+        <div class="flight-details">
+          <div class="flight-route-bold">Calama <span style="color:#cbd5e1">→</span> Santiago</div>
+          <div class="flight-time-small">18:30 PM • H2501</div>
+        </div>
+        <div class="flight-status">
+          <button class="btn-checkin-small">Check-in</button>
+          <div class="seat-small">--</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Vuelos Semana (Campana) -->
+  <div id="modal-week" class="sub-modal hidden">
+    <div class="modal-header">
+      <span>Esta Semana</span>
+      <button class="icon-btn-home" onclick="closeAllModals()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      </button>
+    </div>
+    <div class="modal-content-scroll">
+      <div class="week-section">
+        <h4>Esta Semana</h4>
+        <div class="flight-row-simple">
+          <span>Jue 14: SCL → LIM</span>
+          <span class="highlight-cyan">On Time</span>
+        </div>
+      </div>
+      <div class="week-section">
+        <h4>Próxima Semana</h4>
+        <div class="flight-row-simple">
+          <span>Lun 18: LIM → MIA</span>
+          <span class="highlight-gold">Pending</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: New Booking -->
+  <div id="modal-booking" class="sub-modal hidden">
+    <div class="modal-header">
+      <span>Nuevo Vuelo</span>
+      <button class="icon-btn-home" onclick="closeAllModals()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      </button>
+    </div>
+    <div class="modal-content-scroll">
+      <form onsubmit="event.preventDefault(); alert('Función de agregar vuelo'); closeAllModals();">
+        <input type="text" class="input-booking" placeholder="Código de Reserva (ej: ABC123)" required>
+        <input type="text" class="input-booking" placeholder="Aerolínea" required>
+        <button type="submit" class="btn-add-flight">Agregar Vuelo</button>
+      </form>
+    </div>
+  </div>
+
+  <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+  </div>
 
         <!-- Botón Burbuja Derecha (30%) -->
         <div class="bubble-container">
