@@ -17,7 +17,9 @@ body {
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
-    background-attachment: fixed; /* Para que la imagen quede fija al hacer scroll */
+    background-attachment: fixed; /* Mantiene la imagen fija al hacer scroll */
+    image-rendering: -webkit-optimize-contrast; /* Para Safari/Chrome móviles */
+    image-rendering: crisp-edges;
     
     color: #f1f5f9;
     min-height: 100vh;
@@ -211,6 +213,17 @@ input:checked + .slider:before { transform: translateX(12px); }
     padding: 15px; background: rgba(239, 68, 68, 0.7);
     backdrop-filter: blur(5px); border: none; border-radius: 12px;
     color: white; font-weight: bold; cursor: pointer;
+}
+
+/* Optimización para móviles */
+@media (max-width: 768px) {
+    body {
+        /* En móviles, a veces 'scroll' se ve más nítido que 'fixed' */
+        background-attachment: scroll; 
+        /* Asegurar que cubra bien sin deformar */
+        background-size: cover;
+        background-position: center top; /* Enfocar la parte superior/centro */
+    }
 }
 
 .hidden { display: none !important; }

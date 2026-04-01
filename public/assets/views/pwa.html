@@ -24,7 +24,9 @@
       background-repeat: no-repeat;
       background-position: center center;
       background-size: cover;
-      background-attachment: fixed; /* Para que la imagen quede fija al hacer scroll */
+      background-attachment: fixed; /* Mantiene la imagen fija al hacer scroll */
+      image-rendering: -webkit-optimize-contrast; /* Para Safari/Chrome móviles */
+      image-rendering: crisp-edges;
       color: #f1f5f9;
       min-height: 100vh;
       padding: 16px;
