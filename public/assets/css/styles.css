@@ -394,6 +394,11 @@ input:checked + .slider:before {
     cursor: pointer;
 }
 
+.input:focus { outline: none; border-color: #3b82f6; }
+    .hidden { display: none; }
+    .logo { text-align: center; margin: 32px 0 24px; }
+    .logo h1 { font-size: 24px; background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
 .hidden { display: none !important; }
 
 /* =========================================
