@@ -61,7 +61,7 @@
   <div class="container">
     <div class="logo">
       <h1>✈️ FlightTracker Pro</h1>
-      <p style="color: #94a3b8; margin-top: 4px;">Tu agenda de vuelos, siempre contigo</p>
+      <p style="color: #94a3b8; margin-top: 4px;">Tu agenda de vuelos, tu App</p>
     </div>
 
     <!-- Formulario de Registro -->
@@ -429,6 +429,35 @@
     function hideFlightsView() {
         document.getElementById('flights-view').classList.add('hidden');
     }
+
+    // Función para abrir un modal específico y cerrar los otros
+    function toggleModal(modalId) {
+        // Cerrar todos primero
+        closeAllModals();
+        // Abrir el seleccionado
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    }
+
+    // Función para cerrar todos los modales
+    function closeAllModals() {
+        const modals = document.querySelectorAll('.sub-modal');
+        modals.forEach(modal => {
+            modal.classList.add('hidden');
+        });
+    }
+
+    // Cierra modales si se hace click fuera (opcional, mejor UX)
+    document.addEventListener('click', function(event) {
+        const isClickInsideBar = event.target.closest('.top-bar');
+        const isClickInsideModal = event.target.closest('.sub-modal');
+        
+        if (!isClickInsideBar && !isClickInsideModal) {
+            closeAllModals();
+        }
+    });
   </script>
 </body>
 </html>
