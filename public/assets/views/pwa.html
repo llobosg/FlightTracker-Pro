@@ -7,15 +7,24 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>FlightTracker Pro</title>
-  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon"> 
   <link rel="apple-touch-icon" href="/assets/images/icons/icon-192x192.png">
+  <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/assets/css/styles.css">
   <style>
     /* Estilos críticos inline para carga rápida */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { 
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      /* Color de fondo por defecto (azul oscuro) si la imagen falla */
+      background-color: #0f172a; 
+      /* Ruta absoluta de la imagen */
+      background-image: url('/assets/images/screenshots/avion.jpeg');
+      /* Configuración para que cubra toda la pantalla */
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+      background-attachment: fixed; /* Para que la imagen quede fija al hacer scroll */
       color: #f1f5f9;
       min-height: 100vh;
       padding: 16px;
