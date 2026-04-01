@@ -2,7 +2,7 @@
   "name": "FlightTracker Pro",
   "short_name": "FlightTracker",
   "description": "Controla tu agenda de vuelos en tiempo real",
-  "start_url": "/public/index.php",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#3b82f6",
