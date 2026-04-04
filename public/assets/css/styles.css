@@ -394,6 +394,56 @@ input:checked + .slider:before {
     cursor: pointer;
 }
 
+/* Barra Superior Más Transparente */
+.top-bar.transparent-mode {
+    background: rgba(15, 23, 42, 0.4); /* Más transparente que antes (0.65) */
+    backdrop-filter: blur(8px); /* Un poco menos de blur para ver más el fondo */
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Icono Logout Rojo */
+.logout-icon svg {
+    stroke: #ef4444 !important; /* Forzar color rojo */
+    filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.5));
+}
+
+/* Estilos específicos para Modal Settings */
+.settings-group {
+    margin-bottom: 20px;
+}
+.toggle-row-full {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: #e2e8f0;
+    font-size: 0.9rem;
+}
+.btn-logout-small {
+    width: 100%;
+    padding: 10px;
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    color: #ef4444;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+}
+.btn-logout-small:hover {
+    background: rgba(239, 68, 68, 0.4);
+}
+
+/* Input datetime-local styling fix */
+.input-booking[type="datetime-local"] {
+    color: #fff; 
+}
+.input-booking[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
 .input:focus { outline: none; border-color: #3b82f6; }
     .hidden { display: none; }
     .logo { text-align: center; margin: 32px 0 24px; }

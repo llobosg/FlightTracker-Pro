@@ -54,144 +54,168 @@
       </p>
     </div>
 
-    <div id="dashboard" class="hidden">
+  <div id="dashboard" class="hidden">
   
-  <!-- 1. Barra Superior (Navegación) -->
-  <div class="glass-bar top-bar">
-    <!-- Calendario: Abre Modal Vuelos -->
-    <div class="nav-icon" onclick="toggleModal('modal-flights')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-    </div>
-    <!-- Campana: Abre Modal Notificaciones/Semana -->
-    <div class="nav-icon" onclick="toggleModal('modal-week')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-    </div>
-    <!-- Perfil (Placeholder) -->
-    <div class="nav-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-    </div>
-    <!-- Settings (Placeholder) -->
-    <div class="nav-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-    </div>
-  </div>
-
-  <!-- 2. Contenido Principal (Fichas + Burbuja) -->
-  <div class="main-content">
-    <div class="stats-group">
-      <div class="glass-card stat-card large">
-        <span class="stat-label">Total Flights Booked</span>
-        <span class="stat-value highlight-cyan">12</span>
+    <!-- 1. Barra Superior (Más transparente + Logout) -->
+    <div class="glass-bar top-bar transparent-mode">
+      <!-- Calendario -->
+      <div class="nav-icon" onclick="toggleModal('modal-flights')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
       </div>
-      <div class="glass-card stat-card large">
-        <span class="stat-label">Upcoming Trips</span>
-        <div class="trip-list">
-          <div>SCL → LIM • Jun 14</div>
-          <div>LIM → MIA • Jun 28</div>
-        </div>
+      <!-- Campana -->
+      <div class="nav-icon" onclick="toggleModal('modal-week')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+      </div>
+      <!-- Perfil -->
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      </div>
+      <!-- Settings (Abre Modal Configuración) -->
+      <div class="nav-icon" onclick="toggleModal('modal-settings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </div>
+      <!-- LOGOUT (Nuevo ícono a la derecha) -->
+      <div class="nav-icon logout-icon" onclick="logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
       </div>
     </div>
-    <div class="bubble-container">
-      <button class="bubble-btn" onclick="toggleModal('modal-booking')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-      </button>
-      <span class="bubble-label">New<br>Booking</span>
-    </div>
-  </div>
 
-  <!-- 3. Barra Inferior (Settings) -->
-  <div class="glass-bar bottom-bar">
-    <div class="settings-header">Notification Settings</div>
-    <div class="toggles-row">
-      <div class="toggle-item"><span>Email</span><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
-      <div class="toggle-item"><span>Push</span><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
-      <div class="toggle-item"><span>WhatsApp</span><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
-    </div>
-  </div>
-
-  <!-- ================= MODALES (SUBMODALS) ================= -->
-
-  <!-- Modal 1: Próximos Vuelos (Calendario) -->
-  <div id="modal-flights" class="sub-modal hidden">
-    <div class="modal-header">
-      <span>Mis Vuelos</span>
-      <button class="icon-btn-home" onclick="closeAllModals()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-      </button>
-    </div>
-    <div class="modal-content-scroll">
-      <!-- Ficha Vuelo 1 -->
-      <div class="flight-row">
-        <div class="airline-logo-small" style="background:#005587; color:white;">LATAM</div>
-        <div class="flight-details">
-          <div class="flight-route-bold">Santiago <span style="color:#cbd5e1">→</span> Calama</div>
-          <div class="flight-time-small">07:45 AM • LA600</div>
+    <!-- 2. Contenido Principal (Fichas + Burbuja) -->
+    <div class="main-content">
+      <div class="stats-group">
+        <div class="glass-card stat-card large">
+          <span class="stat-label">Total Flights Booked</span>
+          <span class="stat-value highlight-cyan" id="total-flights-count">0</span>
         </div>
-        <div class="flight-status">
-          <div class="badge-checked">✓ Checked In</div>
-          <div class="seat-small">12A</div>
+        <div class="glass-card stat-card large">
+          <span class="stat-label">Upcoming Trips</span>
+          <div class="trip-list" id="upcoming-trips-list">
+            <div>Cargando...</div>
+          </div>
         </div>
       </div>
-      <!-- Ficha Vuelo 2 -->
-      <div class="flight-row">
-        <div class="airline-logo-small" style="background:#ff6600; color:white;">Sky</div>
-        <div class="flight-details">
-          <div class="flight-route-bold">Calama <span style="color:#cbd5e1">→</span> Santiago</div>
-          <div class="flight-time-small">18:30 PM • H2501</div>
-        </div>
-        <div class="flight-status">
-          <button class="btn-checkin-small">Check-in</button>
-          <div class="seat-small">--</div>
+      <div class="bubble-container">
+        <button class="bubble-btn" onclick="toggleModal('modal-booking')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+        <span class="bubble-label">New<br>Booking</span>
+      </div>
+    </div>
+
+    <!-- ================= MODALES ================= -->
+
+    <!-- Modal 1: Próximos Vuelos (Calendario) -->
+    <div id="modal-flights" class="sub-modal hidden">
+      <div class="modal-header">
+        <span>Mis Vuelos</span>
+        <button class="icon-btn-home" onclick="closeAllModals()">✕</button>
+      </div>
+      <div class="modal-content-scroll" id="flights-list-container">
+        <!-- Se llena dinámicamente con JS -->
+        <p style="text-align:center; color:#cbd5e1;">Cargando vuelos...</p>
+      </div>
+    </div>
+
+    <!-- Modal 2: Vuelos Semana (Campana) -->
+    <div id="modal-week" class="sub-modal hidden">
+      <div class="modal-header">
+        <span>Esta Semana</span>
+        <button class="icon-btn-home" onclick="closeAllModals()">✕</button>
+      </div>
+      <div class="modal-content-scroll">
+        <div class="week-section">
+          <h4>Próximos 7 días</h4>
+          <div id="week-flights-list">
+              <!-- Dinámico -->
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Modal 2: Vuelos Semana (Campana) -->
-  <div id="modal-week" class="sub-modal hidden">
-    <div class="modal-header">
-      <span>Esta Semana</span>
-      <button class="icon-btn-home" onclick="closeAllModals()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-      </button>
+    <!-- Modal 3: New Booking (Formulario Real) -->
+    <div id="modal-booking" class="sub-modal hidden">
+      <div class="modal-header">
+        <span>Nuevo Vuelo</span>
+        <button class="icon-btn-home" onclick="closeAllModals()">✕</button>
+      </div>
+      <div class="modal-content-scroll">
+        <form id="booking-form" onsubmit="handleNewBooking(event)">
+          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Aerolínea</label>
+          <input type="text" name="airline_name" class="input-booking" placeholder="Ej: LATAM, Sky" required>
+          
+          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Código Reserva (PNR)</label>
+          <input type="text" name="reservation_code" class="input-booking" placeholder="Ej: ABC123" maxlength="10" required>
+          
+          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Número de Vuelo</label>
+          <input type="text" name="flight_number" class="input-booking" placeholder="Ej: LA600">
+          
+          <div style="display:flex; gap:10px;">
+              <div style="flex:1">
+                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Origen</label>
+                  <input type="text" name="origin_airport" class="input-booking" placeholder="SCL" maxlength="3" required>
+              </div>
+              <div style="flex:1">
+                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Destino</label>
+                  <input type="text" name="destination_airport" class="input-booking" placeholder="CLO" maxlength="3" required>
+              </div>
+          </div>
+
+          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Salida (Fecha y Hora)</label>
+          <input type="datetime-local" name="departure_time" class="input-booking" required>
+          
+          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Llegada (Fecha y Hora)</label>
+          <input type="datetime-local" name="arrival_time" class="input-booking" required>
+
+          <div style="display:flex; gap:10px;">
+              <div style="flex:1">
+                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Asiento</label>
+                  <input type="text" name="seat_number" class="input-booking" placeholder="12A">
+              </div>
+              <div style="flex:1">
+                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Puerta</label>
+                  <input type="text" name="gate_info" class="input-booking" placeholder="B12">
+              </div>
+          </div>
+
+          <button type="submit" class="btn-add-flight">Guardar Reserva</button>
+        </form>
+      </div>
     </div>
-    <div class="modal-content-scroll">
-      <div class="week-section">
-        <h4>Esta Semana</h4>
-        <div class="flight-row-simple">
-          <span>Jue 14: SCL → LIM</span>
-          <span class="highlight-cyan">On Time</span>
+
+    <!-- Modal 4: Settings (Configuración) -->
+    <div id="modal-settings" class="sub-modal hidden">
+      <div class="modal-header">
+        <span>Configuración</span>
+        <button class="icon-btn-home" onclick="closeAllModals()">✕</button>
+      </div>
+      <div class="modal-content-scroll">
+        <div class="settings-group">
+          <h4 style="color:#fff; margin-bottom:10px;">Notificaciones</h4>
+          <div class="toggle-row-full">
+            <span>Email Alerts</span>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row-full">
+            <span>Push Notifications</span>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row-full">
+            <span>WhatsApp Reminder</span>
+            <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+          </div>
+        </div>
+        <div class="settings-group" style="margin-top:20px;">
+          <h4 style="color:#fff; margin-bottom:10px;">Cuenta</h4>
+          <p style="color:#cbd5e1; font-size:0.9rem;" id="user-email-display">usuario@email.com</p>
+          <button class="btn-logout-small" onclick="logout()">Cerrar Sesión</button>
         </div>
       </div>
-      <div class="week-section">
-        <h4>Próxima Semana</h4>
-        <div class="flight-row-simple">
-          <span>Lun 18: LIM → MIA</span>
-          <span class="highlight-gold">Pending</span>
-        </div>
-      </div>
     </div>
+
   </div>
 
-  <!-- Modal 3: New Booking -->
-  <div id="modal-booking" class="sub-modal hidden">
-    <div class="modal-header">
-      <span>Nuevo Vuelo</span>
-      <button class="icon-btn-home" onclick="closeAllModals()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-      </button>
+    <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
     </div>
-    <div class="modal-content-scroll">
-      <form onsubmit="event.preventDefault(); alert('Función de agregar vuelo'); closeAllModals();">
-        <input type="text" class="input-booking" placeholder="Código de Reserva (ej: ABC123)" required>
-        <input type="text" class="input-booking" placeholder="Aerolínea" required>
-        <button type="submit" class="btn-add-flight">Agregar Vuelo</button>
-      </form>
-    </div>
-  </div>
-
-  <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
-  </div>
 
       <!-- 3. Barra Inferior (Settings) -->
       <div class="glass-bar bottom-bar">
@@ -349,11 +373,6 @@
       }
     }
 
-    function logout() {
-      localStorage.clear();
-      location.reload();
-    }
-
     function resendCode() {
       alert('📧 Código reenviado (simulación)');
     }
@@ -398,6 +417,132 @@
         
         if (!isClickInsideBar && !isClickInsideModal) {
             closeAllModals();
+        }
+    });
+
+    // Función para manejar el envío del formulario New Booking
+    async function handleNewBooking(event) {
+        event.preventDefault();
+        
+        const form = event.target;
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Obtener token del localStorage
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Debes iniciar sesión primero');
+            return;
+        }
+
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn.innerText;
+        btn.innerText = 'Guardando...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/api/flights', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('✅ Vuelo agregado correctamente');
+                closeAllModals();
+                form.reset();
+                loadFlights(); // Recargar lista
+            } else {
+                alert('Error: ' + (result.message || 'No se pudo guardar'));
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error de conexión al guardar.');
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    // Función para cargar vuelos (Simulada por ahora, luego conectamos GET)
+    async function loadFlights() {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            // Aquí llamaremos a tu API real cuando la creemos
+            // const res = await fetch('/api/flights', { headers: { 'Authorization': `Bearer ${token}` }});
+            // const flights = await res.json();
+            
+            // SIMULACIÓN PARA PRUEBAS VISUALES:
+            const mockFlights = [
+                { airline: 'LATAM', code: 'ABC123', number: 'LA600', origin: 'SCL', dest: 'CLO', dep: '2024-04-10T07:45', seat: '12A', status: 1 },
+                { airline: 'Sky', code: 'XYZ789', number: 'H2501', origin: 'CLO', dest: 'SCL', dep: '2024-04-12T18:30', seat: '5B', status: 0 }
+            ];
+
+            // Actualizar contador
+            document.getElementById('total-flights-count').innerText = mockFlights.length;
+            
+            // Actualizar lista próxima
+            const listContainer = document.getElementById('upcoming-trips-list');
+            listContainer.innerHTML = '';
+            mockFlights.slice(0, 2).forEach(f => {
+                listContainer.innerHTML += `<div>${f.origin} → ${f.dest} • ${new Date(f.dep).toLocaleDateString()}</div>`;
+            });
+
+            // Actualizar Modal Vuelos
+            const flightsModalList = document.getElementById('flights-list-container');
+            flightsModalList.innerHTML = '';
+            mockFlights.forEach(f => {
+                const statusBadge = f.status ? `<div class="badge-checked"><span class="check-icon">✓</span> Checked In</div>` : `<button class="btn-checkin-small">Check-in</button>`;
+                
+                flightsModalList.innerHTML += `
+                <div class="flight-row">
+                    <div class="airline-logo-small" style="background:${f.airline === 'LATAM' ? '#005587' : '#ff6600'}; color:white;">${f.airline}</div>
+                    <div class="flight-details">
+                        <div class="flight-route-bold">${f.origin} <span style="color:#cbd5e1">→</span> ${f.dest}</div>
+                        <div class="flight-time-small">${new Date(f.dep).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • ${f.number}</div>
+                    </div>
+                    <div class="flight-status">
+                        ${statusBadge}
+                        <div class="seat-small">${f.seat || '--'}</div>
+                    </div>
+                </div>`;
+            });
+
+        } catch (e) {
+            console.error("Error cargando vuelos", e);
+        }
+    }
+
+    // Función Logout
+    function logout() {
+        if(confirm('¿Seguro que deseas cerrar sesión?')) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            location.reload(); // Recarga para volver al login
+        }
+    }
+
+    // Al cargar el dashboard, inicializar datos
+    document.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('token')) {
+            // Mostrar dashboard si ya está logueado
+            document.getElementById('register-form')?.classList.add('hidden');
+            document.getElementById('login-form')?.classList.add('hidden');
+            document.getElementById('dashboard')?.classList.remove('hidden');
+            
+            // Cargar datos
+            loadFlights();
+            
+            // Mostrar email usuario (simulado)
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if(user.email) document.getElementById('user-email-display').innerText = user.email;
         }
     });
   </script>

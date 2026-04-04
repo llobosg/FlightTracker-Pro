@@ -61,6 +61,51 @@ if (strpos($uri, '/api/') === 0) {
         echo json_encode(['error' => $e->getMessage()]);
     }
     exit();
+
+}elseif ($uri === '/api/flights' && $method === 'POST') {
+    // Verificar Autenticación (Header Authorization)
+    $headers = getallheaders();
+    $authHeader = $headers['Authorization'] ?? '';
+    $token = str_replace('Bearer ', '', $authHeader);
+
+    if (!$token) {
+        http_response_code(401);
+        echo json_encode(['message' => 'No autorizado']);
+        exit();
+    }
+
+    // Aquí deberías validar el token contra tu BD y obtener el user_id
+    // POR AHORA SIMULAREMOS UN USER_ID FIJO O LO LEEREMOS DEL TOKEN SI TUVIERAS JWT IMPLEMENTADO
+    // Para pruebas, asumiremos user_id = 1 (debes cambiar esto cuando tengas JWT real)
+    $userId = 1; 
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    require_once __DIR__ . '/../config/database.php'; // Asegúrate de incluir DB
+    
+    try {
+        $db = Database::getInstance();
+        $stmt = $db->prepare("INSERT INTO flights (user_id, airline_name, reservation_code, flight_number, origin_airport, destination_airport, departure_time, arrival_time, seat_number, gate_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        
+        $stmt->execute([
+            $userId,
+            $input['airline_name'],
+            $input['reservation_code'],
+            $input['flight_number'] ?? null,
+            $input['origin_airport'],
+            $input['destination_airport'],
+            $input['departure_time'],
+            $input['arrival_time'],
+            $input['seat_number'] ?? null,
+            $input['gate_info'] ?? null
+        ]);
+
+        echo json_encode(['success' => true, 'message' => 'Vuelo guardado', 'id' => $db->lastInsertId()]);
+
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Error DB: ' . $e->getMessage()]);
+    }
 }
 
 // Servir Frontend PWA (Si no es API)
