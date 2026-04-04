@@ -478,3 +478,65 @@ input:checked + .slider:before {
         right: 12px;
     }
 }
+
+/* =========================================
+   RESPONSIVE: MÓVIL FLOTANTE EN ESCRITORIO
+   ========================================= */
+
+/* Por defecto (Móvil): Ocupa todo el ancho */
+.app-container {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0 auto;
+    position: relative;
+}
+
+/* Escritorio (Notebook): Limitar ancho y centrar */
+@media (min-width: 769px) {
+    body {
+        /* Fondo oscuro general para resaltar la app */
+        background-color: #050505; 
+        display: flex;
+        justify-content: center;
+        align-items: flex-start; /* Alineado arriba pero centrado horizontalmente */
+        padding-top: 20px;
+    }
+
+    .app-container {
+        /* Ancho fijo tipo móvil grande (ej. iPhone Max) */
+        width: 420px; 
+        max-width: 100%;
+        min-height: 850px; /* Altura mínima para simular pantalla larga */
+        
+        /* Efecto de teléfono flotando */
+        border-radius: 30px;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 0 10px #1e293b; /* Borde simulado de marco */
+        overflow: hidden; /* Recortar bordes redondeados */
+        position: relative;
+        background: transparent; /* Dejar ver el fondo de la app dentro */
+    }
+
+    /* Ajuste del fondo dentro del contenedor limitado */
+    .app-container body {
+        /* El body interno ya tiene el fondo, pero aseguramos que cubra el contenedor */
+        background-attachment: scroll !important; /* Evitar parallax raro en contenedor pequeño */
+    }
+    
+    /* Ajustar barras superiores/inferiores para que respeten el ancho limitado */
+    .top-bar, .bottom-bar, .sub-modal {
+        left: 16px;
+        right: 16px;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .top-bar {
+        top: 16px;
+    }
+    
+    .sub-modal {
+        left: 16px;
+        right: 16px;
+        top: 90px;
+    }
+}
