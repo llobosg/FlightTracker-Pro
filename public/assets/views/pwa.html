@@ -163,12 +163,17 @@
                       </div>
                   </div>
 
-                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Salida</label>
-                  <input type="datetime-local" name="departure_time" class="input-booking" readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
-                  
-                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Llegada</label>
-                  <input type="datetime-local" name="arrival_time" class="input-booking" readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
-                  
+                  <div style="display:flex; gap:10px;">
+                      <div style="flex:1">
+                        <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Salida</label>
+                        <input type="datetime-local" name="departure_time" class="input-booking" readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
+                      </div>
+                      <div style="flex:1">
+                        <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Llegada</label>
+                        <input type="datetime-local" name="arrival_time" class="input-booking" readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
+                      </div>
+                  </div>
+                   
                   <!-- 🔹 Botón para habilitar edición manual si la API falla o el usuario quiere corregir -->
                   <button type="button" onclick="enableManualEdit()" style="background:none; border:none; color:#22d3ee; font-size:0.75rem; cursor:pointer; margin:10px 0 15px 0; display:flex; align-items:center; gap:5px; width:100%; justify-content:center;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
