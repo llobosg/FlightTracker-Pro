@@ -138,15 +138,24 @@
           <div class="modal-header"><span>Nuevo Vuelo</span><button class="icon-btn-home" onclick="closeAllModals()">✕</button></div>
           <div class="modal-content-scroll">
               <form id="booking-form" onsubmit="handleNewBooking(event)">
-                  <!-- 🔹 PRIMERO: Número de Vuelo (Trigger para autocompletado) -->
-                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block; font-weight:bold;">Número de Vuelo *</label>
-                  <input type="text" name="flight_number" class="input-booking" placeholder="Ej: LA600" required style="border-color:#22d3ee; font-weight:bold;">
-                  <div id="flight-search-status" style="font-size:0.7rem; color:#94a3b8; margin-bottom:12px; min-height:18px; font-style:italic;"></div>
-                  
+
+                   <!-- 🔹 PRIMERO: Número de Vuelo (Trigger para autocompletado) -->
+                  <div style="display:flex; gap:10px;">
+                      <div style="flex:1">
+                        <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block; font-weight:bold;">Número de Vuelo *</label>
+                        <input type="text" name="flight_number" class="input-booking" placeholder="Ej: LA600" required style="border-color:#22d3ee; font-weight:bold;">
+                        <div id="flight-search-status" style="font-size:0.7rem; color:#94a3b8; margin-bottom:12px; min-height:18px; font-style:italic;"></div>
+                      </div>
+                  </div>
+
                   <!-- 🔹 Campos autocompletados (inicialmente readonly, editables con botón) -->
-                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Aerolínea</label>
-                  <input type="text" name="airline_name" class="input-booking" placeholder="Se completará automáticamente" readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
-                  
+                  <div style="display:flex; gap:10px;">
+                      <div style="flex:1">
+                        <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Aerolínea</label>
+                        <input type="text" name="airline_name" class="input-booking" placeholder="Se completará automáticamente" readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
+                      </div>
+                  </div>
+
                   <div style="display:flex; gap:10px;">
                       <div style="flex:1">
                           <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Origen *</label>
