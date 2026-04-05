@@ -206,13 +206,24 @@ elseif ($uri === '/api/update-flight-status' && $method === 'POST') {
     $data = json_decode($response, true);
     
     if (isset($data['data']) && count($data['data']) > 0) {
-        $flightInfo = $data['data'][0];
+        $flightInfo = $data['data'][0]; // Tomamos el primero (a veces devuelve histórico y actual)
         
         $status = $flightInfo['flight_status'] ?? 'unknown';
         $gate = $flightInfo['arrival']['gate'] ?? $flightInfo['departure']['gate'] ?? null;
         
+        // NUEVO: Extraer Delay y Horarios Reales
+        $delay = $flightInfo['arrival']['delay'] ?? $flightInfo['departure']['delay'] ?? 0;
+        $actualDeparture = $flightInfo['departure']['actual'] ?? null;
+        $estimatedArrival = $flightInfo['arrival']['estimated'] ?? null;
+        
+        // Info en vivo
+        $isFlying = isset($flightInfo['live']) && !$flightInfo['live']['is_ground'];
+        $altitude = isset($flightInfo['live']) ? $flightInfo['live']['altitude'] : null;
+
         try {
             $db = Database::getInstance();
+            // Actualizamos más columnas (necesitarás agregarlas a la tabla flights si quieres guardarlas permanentemente)
+            // Por ahora, solo actualizamos gate y status, pero devolvemos el resto al frontend para mostrarlo directo
             $stmt = $db->prepare("UPDATE flights SET gate_info = ?, status_api = ? WHERE id = ? AND user_id = ?");
             $stmt->execute([$gate, $status, $flightId, $userId]);
 
@@ -221,18 +232,30 @@ elseif ($uri === '/api/update-flight-status' && $method === 'POST') {
                 'message' => 'Estado actualizado',
                 'live_data' => [
                     'gate' => $gate,
-                    'status' => $status
+                    'status' => $status,
+                    'delay' => $delay,
+                    'actual_departure' => $actualDeparture,
+                    'estimated_arrival' => $estimatedArrival,
+                    'is_flying' => $isFlying,
+                    'altitude' => $altitude,
+                    'aircraft_type' => $flightInfo['aircraft']['iata'] ?? null
                 ]
             ]);
         } catch (PDOException $e) {
-            error_log("DB Update Error: " . $e->getMessage());
-            echo json_encode(['success' => false, 'message' => 'Error al guardar']);
+            echo json_encode(['success' => false, 'message' => 'Vuelo no encontrado en API']);
         }
     } else {
         echo json_encode(['success' => false, 'message' => 'Vuelo no encontrado en API']);
     }
     exit();
 }
+
+
+
+echo json_encode(['success' => false, 'message' => 'Vuelo no encontrado en API']);
+
+
+
 
 // G. GUARDAR PREFERENCIAS DE NOTIFICACIÓN
 elseif ($uri === '/api/save-preferences' && $method === 'POST') {

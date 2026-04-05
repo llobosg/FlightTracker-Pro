@@ -476,7 +476,7 @@
         }
     }
 
-    // Carga de Vuelos CORREGIDA
+    // Carga de Vuelos
     async function loadFlights() {
         const token = localStorage.getItem('token');
         if (!token) return;
@@ -503,7 +503,7 @@
                 upcomingList.innerHTML = '<span style="color:#64748b">Sin vuelos</span>';
             }
 
-            // --- MODAL CALENDARIO (Agrupado por Mes + Botón Actualizar) ---
+            // --- MODAL CALENDARIO (Agrupado por Mes + Botón Actualizar + Check-in Link) ---
             const calendarContainer = document.getElementById('flights-list-container');
             calendarContainer.innerHTML = '';
             
@@ -527,26 +527,70 @@
                         const time = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                         const dateShort = d.toLocaleDateString('es-ES', {weekday:'short', day:'numeric'});
                         
-                        // Determinar color de estado
-                        let statusBadge = '';
+                        // Determinar color de estado y badges
+                        let statusText = '';
+                        let delayBadge = '';
+                        let liveBadge = '';
+                        
                         if (f.status_api) {
                             const s = f.status_api.toLowerCase();
-                            const color = s === 'landed' ? '#4ade80' : (s === 'cancelled' ? '#ef4444' : '#fbbf24');
-                            statusBadge = `<div style="font-size:0.6rem; color:${color}; font-weight:bold; margin-top:2px;">${f.status_api.toUpperCase()}</div>`;
+                            if (s === 'active') {
+                                statusText = '<span style="color:#4ade80; font-weight:bold; font-size:0.7rem;">● En Vuelo</span>';
+                                if (f.altitude) liveBadge = `<span style="font-size:0.6rem; color:#94a3b8;">✈️ ${Math.round(f.altitude/1000)} km alt.</span>`;
+                            } else if (s === 'landed') {
+                                statusText = '<span style="color:#3b82f6; font-weight:bold; font-size:0.7rem;">● Aterrizado</span>';
+                            } else if (s === 'scheduled') {
+                                statusText = '<span style="color:#fbbf24; font-size:0.7rem;">● Programado</span>';
+                            }
+                        }
+
+                        if (f.delay_minutes && f.delay_minutes > 0) {
+                            delayBadge = `<span style="color:#ef4444; font-size:0.7rem; font-weight:bold;">(+${f.delay_minutes} min)</span>`;
+                        }
+
+                        // Lógica para el enlace de Check-in
+                        let checkInBtn = '';
+                        if (f.flight_number && f.airline_name) {
+                            // Mapeo simple de URLs directas (puedes expandirlo)
+                            const airlineLower = f.airline_name.toLowerCase();
+                            let checkInUrl = '';
+                            
+                            if (airlineLower.includes('latam')) checkInUrl = `https://www.latam.com/es_cl/check-in`;
+                            else if (airlineLower.includes('sky')) checkInUrl = `https://www.skyairline.com/check-in`;
+                            else if (airlineLower.includes('jet')) checkInUrl = `https://www.jetsmart.com/cl/es/check-in`;
+                            else if (airlineLower.includes('iberia')) checkInUrl = `https://www.iberia.com/cl/check-in`;
+                            else if (airlineLower.includes('delta')) checkInUrl = `https://www.delta.com/check-in`;
+                            else checkInUrl = `https://www.google.com/search?q=check+in+${encodeURIComponent(f.airline_name)}+${f.flight_number}`;
+
+                            checkInBtn = `
+                            <a href="${checkInUrl}" target="_blank" style="
+                                display:inline-block; 
+                                background:rgba(34, 211, 238, 0.2); 
+                                color:#22d3ee; 
+                                text-decoration:none; 
+                                padding:4px 8px; 
+                                border-radius:6px; 
+                                font-size:0.65rem; 
+                                font-weight:bold; 
+                                margin-top:4px;
+                                border:1px solid rgba(34, 211, 238, 0.3);
+                            ">📱 Check-in Online</a>`;
                         }
 
                         htmlGroup += `
                         <div class="flight-row">
                             <div class="airline-logo-small" style="background:${getAirlineColor(f.airline_name)}">${f.airline_name ? f.airline_name.substring(0,3).toUpperCase() : 'FLT'}</div>
                             <div class="flight-details">
-                                <div class="flight-route-bold">${f.origin_airport} → ${f.destination_airport}</div>
+                                <div class="flight-route-bold">${f.origin_airport} → ${f.destination_airport} ${delayBadge}</div>
                                 <div class="flight-time-small">${dateShort} • ${time} ${f.flight_number?'• '+f.flight_number:''}</div>
-                                ${f.gate_info ? `<div style="font-size:0.65rem; color:#fbbf24; margin-top:2px;">Puerta: ${f.gate_info}</div>` : ''}
-                                ${statusBadge}
+                                ${statusText}
+                                ${liveBadge}
+                                ${f.gate_info ? `<div style="font-size:0.65rem; color:#fbbf24; margin-top:2px;"> Puerta: ${f.gate_info}</div>` : ''}
+                                ${checkInBtn}
                             </div>
                             <div class="flight-status">
                                 <div class="seat-small">${f.seat_number||'--'}</div>
-                                ${f.flight_number ? `<button onclick="updateFlightStatus(${f.id}, '${f.flight_number}')" style="background:none; border:none; color:#22d3ee; cursor:pointer; font-size:1.2rem; margin-left:8px; display:flex; align-items:center;" title="Actualizar Estado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></button>` : ''}
+                                ${f.flight_number ? `<button onclick="updateFlightStatus(${f.id}, '${f.flight_number}')" style="background:none; border:none; color:#22d3ee; cursor:pointer; font-size:1.2rem; margin-left:8px;" title="Actualizar Estado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></button>` : ''}
                             </div>
                         </div>`;
                     });
