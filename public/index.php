@@ -447,57 +447,78 @@ elseif ($uri === '/api/get-today-alerts' && $method === 'GET') {
     exit();
 }
 
-// J. BUSCAR VUELO POR NÚMERO (Para autocompletado frontend)
+// J. BUSCAR VUELO POR NÚMERO (OpenSky Network - Gratis)
 elseif ($uri === '/api/search-flight' && $method === 'GET') {
-    $flightNum = $_GET['number'] ?? '';
-    $apiKey = getenv('AVIATION_STACK_KEY');
+    $flightNum = strtoupper(trim($_GET['number'] ?? ''));
     
-    if (!$flightNum || !$apiKey) {
+    if (!$flightNum || strlen($flightNum) < 2) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Faltan parámetros']);
+        echo json_encode(['success' => false, 'message' => 'Número de vuelo inválido']);
         exit();
     }
 
-    // Consultar AviationStack
-    $url = "https://api.aviationstack.com/v1/flights?access_key={$apiKey}&flight_iata={$flightNum}";
+    // OpenSky: Buscar por callsign (número de vuelo en mayúsculas)
+    // Nota: OpenSky devuelve vuelos REALES/RECIENTES, no programados futuros
+    $url = "https://opensky-network.org/api/flights/all?callsign={$flightNum}";
     
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
     curl_setopt($ch, CURLOPT_USERAGENT, 'FlightTracker-Pro/1.0');
+    
+    // Opcional: Usar credenciales si OpenSky las requiere en el futuro
+    $clientId = getenv('OPENSKY_CLIENT_ID');
+    $clientSecret = getenv('OPENSKY_CLIENT_SECRET');
+    if ($clientId && $clientSecret) {
+        curl_setopt($ch, CURLOPT_USERPWD, "{$clientId}:{$clientSecret}");
+    }
+    
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
     if ($httpCode !== 200 || !$response) {
-        error_log("AviationStack Error ($httpCode): $response");
-        echo json_encode(['success' => false, 'message' => 'Error consultando API externa']);
+        error_log("OpenSky Error ($httpCode): $response");
+        echo json_encode(['success' => false, 'message' => 'Error consultando OpenSky']);
         exit();
     }
 
     $data = json_decode($response, true);
     
-    if (isset($data['data']) && count($data['data']) > 0) {
-        $f = $data['data'][0];
+    // OpenSky devuelve array de vuelos (históricos/recientes)
+    if (is_array($data) && count($data) > 0) {
+        $f = $data[0]; // Tomar el más reciente
         
-        // Extraer y formatear datos útiles
-        $result = [
+        // Mapear datos de OpenSky a nuestro formato
+        // Nota: OpenSky usa códigos ICAO (4 letras) no IATA (3 letras)
+        $origin = $f['departure_airport'] ?? null; // Ej: SCEL
+        $destination = $f['arrival_airport'] ?? null; // Ej: SCCF
+        
+        // Convertir ICAO a IATA si es posible (mapeo básico)
+        $icaoToIata = [
+            'SCEL' => 'SCL', 'SCCF' => 'CJC', 'SCSE' => 'LSC', 
+            'SCTE' => 'ZCO', 'SCFA' => 'IQQ', 'SCAT' => 'ARI',
+            'SCIP' => 'IPC', 'SCRM' => 'PMC', 'SCCI' => 'PUQ'
+        ];
+        
+        echo json_encode([
             'success' => true,
             'flight' => [
-                'airline' => $f['airline']['name'] ?? null,
-                'flight_number' => $f['flight']['iata'] ?? $flightNum,
-                'origin' => $f['departure']['iata'] ?? null,
-                'destination' => $f['arrival']['iata'] ?? null,
-                'scheduled_departure' => $f['departure']['scheduled'] ?? null,
-                'scheduled_arrival' => $f['arrival']['scheduled'] ?? null,
-                'terminal_departure' => $f['departure']['terminal'] ?? null,
-                'terminal_arrival' => $f['arrival']['terminal'] ?? null,
+                'airline' => null, // OpenSky no siempre incluye nombre de aerolínea
+                'flight_number' => $f['callsign'] ?? $flightNum,
+                'origin' => $icaoToIata[$origin] ?? $origin,
+                'destination' => $icaoToIata[$destination] ?? $destination,
+                'scheduled_departure' => $f['first_seen'] ? date('c', $f['first_seen']) : null,
+                'scheduled_arrival' => $f['last_seen'] ? date('c', $f['last_seen']) : null,
+                'is_real_time' => true // Indicador para frontend
             ]
-        ];
-        echo json_encode($result);
+        ]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Vuelo no encontrado en base de datos de aerolíneas']);
+        echo json_encode([
+            'success' => false, 
+            'message' => 'Vuelo no encontrado. OpenSky solo muestra vuelos reales/recientes, no programados futuros.'
+        ]);
     }
     exit();
 }

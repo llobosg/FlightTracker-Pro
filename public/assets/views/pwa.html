@@ -1062,21 +1062,29 @@
         checkDailyAlertsOnOpen();
     }
 
-        // 🔍 Función para buscar vuelo en AviationStack (ACTUALIZADA)
+    // 🔍 Búsqueda inteligente: Intentar OpenSky, fallback a manual
     async function searchFlightByNumber(flightNumber) {
         const statusEl = document.getElementById('flight-search-status');
         
         if (!flightNumber || flightNumber.length < 2) {
-            if (statusEl) {
-                statusEl.innerText = '';
-                statusEl.className = '';
-            }
+            if (statusEl) { statusEl.innerText = ''; statusEl.className = ''; }
             return null;
         }
         
+        // 1️⃣ Buscar en caché primero
+        const cached = getCachedFlight(flightNumber);
+        if (cached) {
+            if (statusEl) {
+                statusEl.innerText = `✅ (Caché) ${cached.airline || 'Vuelo encontrado'}`;
+                statusEl.className = 'success';
+            }
+            return cached;
+        }
+        
+        // 2️⃣ Intentar OpenSky
         if (statusEl) {
-            statusEl.innerText = '🔍 Buscando información del vuelo...';
-            statusEl.className = 'searching'; // Clase para color gris
+            statusEl.innerText = '🔍 Buscando en OpenSky...';
+            statusEl.className = 'searching';
         }
         
         try {
@@ -1084,21 +1092,29 @@
             const data = await res.json();
             
             if (data.success && data.flight) {
-                // El texto se actualiza en fillFlightForm para mantener consistencia
+                // Si OpenSky encontró el vuelo (probablemente en tiempo real)
+                setCachedFlight(flightNumber, data.flight);
+                
+                if (statusEl) {
+                    const airline = data.flight.airline || (data.flight.is_real_time ? '✈️ En vuelo' : 'Desconocida');
+                    statusEl.innerText = `✅ ${airline}`;
+                    statusEl.className = 'success';
+                }
                 return data.flight;
             } else {
+                // 3️⃣ Fallback: OpenSky no encontró vuelo futuro, permitir entrada manual
                 if (statusEl) {
-                    statusEl.innerText = '⚠️ Vuelo no encontrado. Completa manualmente.';
-                    statusEl.className = 'warning'; // Clase para color amarillo
+                    statusEl.innerText = 'ℹ️ Vuelo futuro. Completa manualmente.';
+                    statusEl.className = 'warning';
                 }
+                // Devolver null para que el usuario complete los campos
                 return null;
             }
         } catch (e) {
             if (statusEl) {
-                statusEl.innerText = '❌ Error de conexión. Completa manualmente.';
-                statusEl.className = 'error'; // Clase para color rojo
+                statusEl.innerText = '❌ Error. Completa manualmente.';
+                statusEl.className = 'error';
             }
-            console.error("Error buscando vuelo:", e);
             return null;
         }
     }
