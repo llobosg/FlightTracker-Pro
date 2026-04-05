@@ -666,7 +666,9 @@
             const result = await res.json();
 
             if (result.success) {
-                showToast(`✅ Estado actualizado: Puerta ${result.live_data.gate || 'N/A'}`, 'success');
+                const gate = result.live_data.gate || 'Aún no asignada';
+                const status = result.live_data.status || 'Desconocido';
+                showToast(`✅ Actualizado: Estado ${status} | Puerta: ${gate}`, 'success');
                 // Recargar lista para ver cambios
                 setTimeout(() => loadFlights(), 1000);
             } else {
@@ -677,6 +679,118 @@
         } finally {
             btn.style.transform = 'rotate(0deg)';
         }
+    }
+
+    // Función para guardar preferencias
+    async function savePreferences() {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        // Obtener valores de los switches
+        const emailAlerts = document.querySelector('.switch input:nth-of-type(1)').checked ? 1 : 0;
+        const pushNotifs = document.querySelector('.switch input:nth-of-type(2)').checked ? 1 : 0;
+        const whatsApp = document.querySelector('.switch input:nth-of-type(3)').checked ? 1 : 0;
+        const whatsAppNumber = prompt("Ingresa tu número WhatsApp (+569...):", "+569..."); // Simplificado para demo
+
+        try {
+            const res = await fetch('/api/save-preferences', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({
+                    email_alerts: emailAlerts,
+                    push_notifications: pushNotifs,
+                    whatsapp_reminder: whatsApp,
+                    whatsapp_number: whatsAppNumber
+                })
+            });
+            const result = await res.json();
+            if (result.success) showToast('✅ Preferencias guardadas', 'success');
+        } catch (e) {
+            showToast('Error al guardar', 'error');
+        }
+    }
+
+    // Solicitar permiso para Push Notifications
+    async function requestPushPermission() {
+        if ('serviceWorker' in navigator && 'PushManager' in window) {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                showToast(' Notificaciones activadas', 'success');
+                // Aquí deberías suscribirte al servidor de push real (VAPID keys necesarias para producción)
+                // Por ahora, simulamos que está activo.
+            } else {
+                showToast('Permiso denegado', 'warning');
+            }
+        } else {
+            showToast('Tu navegador no soporta notificaciones', 'error');
+        }
+    }
+
+    // Modificar los listeners de los switches en el modal Settings
+    document.addEventListener('DOMContentLoaded', () => {
+        // ... código anterior ...
+        
+        // Agregar listener al switch de Push para pedir permiso al activarlo
+        const pushSwitch = document.querySelector('.switch input:nth-of-type(2)'); // Ajusta el selector según tu HTML
+        if (pushSwitch) {
+            pushSwitch.addEventListener('change', function() {
+                if (this.checked) requestPushPermission();
+            });
+        }
+
+        // Agregar botón "Guardar" en el modal Settings (o guardar automático al cambiar)
+        // Opcional: Agregar un botón explícito en el modal settings
+        const settingsModal = document.getElementById('modal-settings');
+        if(settingsModal) {
+            const saveBtn = document.createElement('button');
+            saveBtn.innerText = "Guardar Configuración";
+            saveBtn.className = "btn-add-flight"; // Reutiliza estilo
+            saveBtn.style.marginTop = "20px";
+            saveBtn.onclick = savePreferences;
+            settingsModal.querySelector('.modal-content-scroll').appendChild(saveBtn);
+        }
+    });
+
+    // Función para verificar alertas del día al iniciar
+    async function checkDailyAlertsOnOpen() {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            const res = await fetch('/api/get-today-alerts', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const result = await res.json();
+            
+            if (result.success && result.alerts.length > 0) {
+                // Mostrar notificaciones nativas del navegador
+                result.alerts.forEach(alert => {
+                    if (Notification.permission === 'granted') {
+                        new Notification(alert.title, {
+                            body: alert.body,
+                            icon: alert.icon
+                        });
+                    } else {
+                        // Si no hay permiso, mostrar un Toast
+                        showToast(`🔔 ${alert.body}`, 'warning');
+                    }
+                });
+            }
+        } catch (e) {
+            console.error("Error verificando alertas", e);
+        }
+    }
+
+    // Modifica tu initDashboard para llamar a esto
+    function initDashboard() {
+        // ... código anterior de usuario ...
+        loadFlights();
+        
+        // NUEVO: Verificar alertas al abrir
+        checkDailyAlertsOnOpen();
     }
 </script>
 </body>
