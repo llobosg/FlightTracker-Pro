@@ -165,12 +165,13 @@
 
                   <div style="display:flex; gap:10px;">
                       <div style="flex:1">
-                        <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Salida</label>
-                        <input type="datetime-local" name="departure_time" class="input-booking" readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
+                          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Salida</label>
+                          <input type="text" name="departure_time" class="input-booking" readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
                       </div>
+
                       <div style="flex:1">
-                        <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Llegada</label>
-                        <input type="datetime-local" name="arrival_time" class="input-booking" readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
+                          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Llegada</label>
+                          <input type="text" name="arrival_time" class="input-booking" readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
                       </div>
                   </div>
                    
@@ -1269,6 +1270,30 @@
         if (!dateValue || !timeValue) return null;
         // dateValue: YYYY-MM-DD, timeValue: HH:mm
         return `${dateValue}T${timeValue}:00`;
+    }
+
+    function formatDateLocal(dateString) {
+        const date = new Date(dateString);
+
+        // Ajuste de zona horaria (clave)
+        const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+
+        const day = String(localDate.getDate()).padStart(2, '0');
+        const month = String(localDate.getMonth() + 1).padStart(2, '0');
+        const year = String(localDate.getFullYear()).slice(-2);
+        const hours = String(localDate.getHours()).padStart(2, '0');
+        const minutes = String(localDate.getMinutes()).padStart(2, '0');
+
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
+    }
+
+    // Ejemplo de uso con tus datos
+    if (flightData.departure_time) {
+        form.elements['departure_time'].value = formatDateLocal(flightData.departure_time);
+    }
+
+    if (flightData.arrival_time) {
+        form.elements['arrival_time'].value = formatDateLocal(flightData.arrival_time);
     }
 </script>
 </body>
