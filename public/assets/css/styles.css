@@ -145,7 +145,7 @@ body {
     width: 90%; 
     max-width: 388px; /* 420px container - 32px márgenes aprox */
     
-    max-height: 70vh;
+    max-height: 78vh;
     border-radius: 20px;
     z-index: 200;
     display: flex;
@@ -173,7 +173,13 @@ body {
     width: 32px; height: 32px; color: #fff; cursor: pointer; 
     display: flex; align-items: center; justify-content: center;
 }
-.modal-content-scroll { padding: 15px; overflow-y: auto; max-height: 60vh; }
+.modal-content-scroll { 
+    padding: 15px; 
+    overflow-y: auto; 
+    max-height: 65vh; /* Aumentado de 60vh a 65vh */
+    /* Agregamos un padding inferior extra para que el último elemento no quede pegado al borde */
+    padding-bottom: 30px; 
+}
 
 /* Estilos internos formularios y listas */
 .input-booking { 
@@ -181,10 +187,18 @@ body {
     background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); 
     border-radius: 10px; color: #fff; 
 }
+/* Asegurar que el botón tenga espacio arriba */
 .btn-add-flight { 
-    width: 100%; padding: 12px; 
+    width: 100%; 
+    padding: 14px; /* Un poco más alto */
+    margin-top: 15px; /* Margen superior para separarlo del último input */
     background: linear-gradient(90deg, #22d3ee, #3b82f6); 
-    border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; 
+    border: none; 
+    border-radius: 10px; 
+    color: white; 
+    font-weight: bold; 
+    cursor: pointer; 
+    box-shadow: 0 4px 15px rgba(34, 211, 238, 0.3); /* Sombra para resaltar */
 }
 .flight-row { 
     display: flex; align-items: center; background: rgba(255,255,255,0.05); 
