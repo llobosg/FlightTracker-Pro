@@ -7,11 +7,6 @@
     padding: 0;
 }
 
-/* =========================================
-   BASE & APP CONTAINER
-   ========================================= */
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: #0f172a;
@@ -19,22 +14,25 @@ body {
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
-    background-attachment: fixed;
+    /* Cambiado a scroll para evitar glitches en móviles */
+    background-attachment: scroll; 
     color: #f1f5f9;
     min-height: 100vh;
     display: flex;
-    justify-content: center; /* Centrar horizontalmente siempre */
-    align-items: flex-start; /* Alinear arriba */
+    justify-content: center;
+    align-items: flex-start;
     padding: 20px 0;
+    overflow-x: hidden;
 }
 
 /* Contenedor Principal (Móvil Flotante) */
 .app-container {
     width: 100%;
-    max-width: 420px; /* Ancho máximo tipo móvil */
+    max-width: 420px;
     min-height: 800px;
     position: relative;
     padding-bottom: 40px;
+    /* En móvil ocupa todo, en desktop se centra solo por el flex del body */
 }
 
 /* Logo Header */
@@ -43,9 +41,14 @@ body {
     margin: 20px 0 10px;
     padding: 0 16px;
 }
-.logo-header h1 { font-size: 1.5rem; background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.logo-header h1 { 
+    font-size: 1.5rem; 
+    background: linear-gradient(135deg, #60a5fa, #a78bfa); 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; 
+}
 
-/* Cards Generales */
+/* Cards Generales (Login/Register) */
 .card {
     background: rgba(30, 41, 59, 0.8);
     backdrop-filter: blur(10px);
@@ -55,8 +58,21 @@ body {
     border: 1px solid rgba(255,255,255,0.1);
 }
 .hidden { display: none !important; }
-.input, .btn { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(15,23,42,0.6); color: white; }
-.btn { background: linear-gradient(135deg, #3b82f6, #6366f1); border: none; font-weight: bold; cursor: pointer; }
+.input, .btn { 
+    width: 100%; 
+    padding: 12px; 
+    margin-bottom: 10px; 
+    border-radius: 8px; 
+    border: 1px solid rgba(255,255,255,0.2); 
+    background: rgba(15,23,42,0.6); 
+    color: white; 
+}
+.btn { 
+    background: linear-gradient(135deg, #3b82f6, #6366f1); 
+    border: none; 
+    font-weight: bold; 
+    cursor: pointer; 
+}
 
 /* =========================================
    TOP BAR & MAIN CONTENT
@@ -64,7 +80,7 @@ body {
 .top-bar {
     position: sticky;
     top: 16px;
-    margin: 0 16px; /* Margen igual al contenedor */
+    margin: 0 16px; 
     height: 60px;
     border-radius: 30px;
     display: flex;
@@ -87,570 +103,178 @@ body {
     gap: 15px;
 }
 .stats-group { flex: 7; display: flex; flex-direction: column; gap: 15px; }
-.stat-card.large { flex: 1; padding: 20px; border-radius: 20px; text-align: center; display: flex; flex-direction: column; justify-content: center; min-height: 100px; background: rgba(30,41,59,0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+.stat-card.large { 
+    flex: 1; 
+    padding: 20px; 
+    border-radius: 20px; 
+    text-align: center; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    min-height: 100px; 
+    background: rgba(30,41,59,0.6); 
+    backdrop-filter: blur(10px); 
+    border: 1px solid rgba(255,255,255,0.1); 
+}
 .stat-label { font-size: 0.75rem; color: #cbd5e1; }
 .stat-value { font-size: 1.5rem; font-weight: bold; }
 .highlight-cyan { color: #22d3ee; text-shadow: 0 0 10px rgba(34, 211, 238, 0.6); }
 .trip-list { font-size: 0.7rem; color: #94a3b8; line-height: 1.4; }
 
 .bubble-container { flex: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.bubble-btn { width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); border: 2px solid rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.bubble-btn { 
+    width: 70px; height: 70px; border-radius: 50%; 
+    background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); 
+    border: 2px solid rgba(255,255,255,0.5); 
+    display: flex; align-items: center; justify-content: center; cursor: pointer; 
+}
 .bubble-btn svg { width: 35px; height: 35px; stroke: #fff; }
 .bubble-label { margin-top: 8px; font-size: 0.65rem; color: #fff; text-align: center; font-weight: bold; }
 
 /* =========================================
-   SUB-MODALS (CRÍTICO: Mismo ancho que app)
+   SUB-MODALS (LÓGICA UNIFICADA)
    ========================================= */
 .sub-modal {
+    /* Posición fija relativa al viewport, pero centrada manualmente */
     position: fixed;
-    /* Usamos left/right relativos al viewport, PERO limitados por el max-width del body centrado */
-    /* Truco: Como body está centrado y app-container tiene max-width, usamos márgenes automáticos o posiciones fijas calculadas */
-    /* Mejor enfoque para PWA centrada: Posición absoluta relativa al body, centrada */
-    top: 90px; 
-    left: 50%; /* Centrar horizontalmente */
-    transform: translateX(-50%); /* Ajustar centro */
-    width: 90%; /* Ancho relativo al contenedor padre (app-container aprox) */
-    max-width: 388px; /* 420px (container) - 32px (márgenes laterales) */
+    top: 90px;
+    left: 50%; 
+    transform: translateX(-50%); /* Centrado horizontal perfecto */
+    
+    /* Ancho controlado: 90% del viewport pero limitado al máximo del container */
+    width: 90%; 
+    max-width: 388px; /* 420px container - 32px márgenes aprox */
     
     max-height: 70vh;
     border-radius: 20px;
     z-index: 200;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(56, 189, 248, 0.5));
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(56, 189, 248, 0.6));
     backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    animation: slideDown 0.3s ease-out;
+    animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes slideDown { 
+    from { opacity: 0; transform: translate(-50%, -40px); } 
+    to { opacity: 1; transform: translate(-50%, 0); } 
+}
 
-.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); color: #fff; font-weight: bold; }
-.icon-btn-home { background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 32px; height: 32px; color: #fff; cursor: pointer; }
+.modal-header { 
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); 
+    color: #fff; font-weight: bold; 
+}
+.icon-btn-home { 
+    background: rgba(255,255,255,0.1); border: none; border-radius: 50%; 
+    width: 32px; height: 32px; color: #fff; cursor: pointer; 
+    display: flex; align-items: center; justify-content: center;
+}
 .modal-content-scroll { padding: 15px; overflow-y: auto; max-height: 60vh; }
 
 /* Estilos internos formularios y listas */
-.input-booking { width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: #fff; }
-.btn-add-flight { width: 100%; padding: 12px; background: linear-gradient(90deg, #22d3ee, #3b82f6); border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; }
-.flight-row { display: flex; align-items: center; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 15px; margin-bottom: 10px; }
-.airline-logo-small { width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold; margin-right: 12px; }
+.input-booking { 
+    width: 100%; padding: 12px; margin-bottom: 10px; 
+    background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); 
+    border-radius: 10px; color: #fff; 
+}
+.btn-add-flight { 
+    width: 100%; padding: 12px; 
+    background: linear-gradient(90deg, #22d3ee, #3b82f6); 
+    border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; 
+}
+.flight-row { 
+    display: flex; align-items: center; background: rgba(255,255,255,0.05); 
+    padding: 12px; border-radius: 15px; margin-bottom: 10px; 
+}
+.airline-logo-small { 
+    width: 35px; height: 35px; border-radius: 8px; 
+    display: flex; align-items: center; justify-content: center; 
+    font-size: 0.6rem; font-weight: bold; margin-right: 12px; 
+}
 .flight-details { flex: 1; }
 .flight-route-bold { font-size: 0.9rem; font-weight: bold; color: #fff; }
 .flight-time-small { font-size: 0.7rem; color: #cbd5e1; }
 .flight-status { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
-.badge-checked { background: rgba(34, 197, 94, 0.2); color: #4ade80; font-size: 0.65rem; padding: 4px 8px; border-radius: 12px; }
-.btn-checkin-small { background: #3b82f6; color: white; border: none; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; cursor: pointer; }
+.badge-checked { 
+    background: rgba(34, 197, 94, 0.2); color: #4ade80; 
+    font-size: 0.65rem; padding: 4px 8px; border-radius: 12px; 
+}
+.btn-checkin-small { 
+    background: #3b82f6; color: white; border: none; 
+    padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; cursor: pointer; 
+}
 .seat-small { font-size: 0.75rem; font-weight: bold; color: #fff; }
 
 /* Settings Toggles */
 .settings-group { margin-bottom: 20px; }
-.toggle-row-full { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #e2e8f0; font-size: 0.9rem; }
+.toggle-row-full { 
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); 
+    color: #e2e8f0; font-size: 0.9rem; 
+}
 .switch { position: relative; display: inline-block; width: 30px; height: 18px; }
 .switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 34px; }
-.slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+.slider { 
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; 
+    background-color: #334155; transition: .4s; border-radius: 34px; 
+}
+.slider:before { 
+    position: absolute; content: ""; height: 14px; width: 14px; 
+    left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; 
+}
 input:checked + .slider { background-color: #3b82f6; }
 input:checked + .slider:before { transform: translateX(12px); }
-.btn-logout-small { width: 100%; padding: 10px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); color: #ef4444; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+.btn-logout-small { 
+    width: 100%; padding: 10px; 
+    background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); 
+    color: #ef4444; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; 
+}
+.btn-logout-small:hover { background: rgba(239, 68, 68, 0.4); }
 
-/* Media Query para Escritorio (Notebook) */
+/* Input datetime-local fix */
+.input-booking[type="datetime-local"] { color: #fff; }
+.input-booking[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
+/* =========================================
+   MEDIA QUERIES
+   ========================================= */
+
+/* Móvil (< 769px) */
+@media (max-width: 768px) {
+    body { padding: 0; align-items: flex-start; }
+    .app-container { min-height: 100vh; box-shadow: none; }
+    
+    .top-bar { top: 12px; margin: 0 12px; }
+    
+    .sub-modal {
+        top: 85px;
+        width: 92%; /* Un poco más ancho en móvil pequeño */
+        max-width: 360px;
+    }
+}
+
+/* Escritorio / Notebook (>= 769px) */
 @media (min-width: 769px) {
     body {
         background-color: #050505; /* Fondo oscuro fuera de la app */
-        align-items: flex-start;
         padding-top: 40px;
     }
     .app-container {
-        box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 0 10px #1e293b; /* Marco de teléfono */
+        width: 420px;
+        min-height: 850px;
         border-radius: 30px;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 0 10px #1e293b;
         overflow: hidden;
-        background: transparent; 
+        background: transparent;
     }
-    /* Asegurar que los modales respeten el ancho del container en desktop */
+    
+    /* Los modales ya están centrados globalmente con left:50% + transform, 
+       pero aseguramos que el max-width coincida con el container */
     .sub-modal {
-        left: 50%;
-        transform: translateX(-50%);
-        /* El max-width ya está definido globalmente para coincidir con el container */
-    }
-}
-
-/* =========================================
-   GLASSMORPHISM COMPONENTS
-   ========================================= */
-.glass-bar, .glass-card, .sub-modal, .bubble-btn {
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-}
-
-
-
-.nav-icon svg {
-    width: 24px;
-    height: 24px;
-    stroke: #fff;
-    opacity: 0.9;
-    cursor: pointer;
-}
-
-/* =========================================
-   MAIN CONTENT & STATS
-   ========================================= */
-.main-content {
-    display: flex;
-    justify-content: space-between;
-    padding: 20px 0; /* Sin padding lateral extra porque el body ya lo tiene */
-    gap: 15px;
-    align-items: stretch;
-}
-
-.stats-group {
-    flex: 7;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.stat-card.large {
-    flex: 1;
-    padding: 20px;
-    border-radius: 20px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: 100px;
-}
-
-.stat-label { font-size: 0.75rem; color: #cbd5e1; }
-.stat-value { font-size: 1.5rem; font-weight: bold; }
-.highlight-cyan { color: #22d3ee; text-shadow: 0 0 10px rgba(34, 211, 238, 0.6); }
-.highlight-gold { color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
-.trip-list { font-size: 0.7rem; color: #94a3b8; line-height: 1.4; }
-
-/* =========================================
-   BUBBLE BUTTON
-   ========================================= */
-.bubble-container {
-    flex: 3;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.bubble-btn {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.bubble-btn:active { transform: scale(0.95); }
-
-.bubble-btn svg {
-    width: 35px;
-    height: 35px;
-    stroke: #fff;
-    filter: drop-shadow(0 0 5px rgba(255,255,255,0.8));
-}
-
-.bubble-label {
-    margin-top: 8px;
-    font-size: 0.65rem;
-    color: #fff;
-    text-align: center;
-    font-weight: bold;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-}
-
-/* =========================================
-   BOTTOM BAR (SETTINGS)
-   ========================================= */
-.bottom-bar {
-    position: fixed;
-    bottom: 16px;
-    left: 16px;
-    right: 16px;
-    padding: 15px;
-    border-radius: 30px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    z-index: 100;
-    border: 1px solid transparent;
-    background-image: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.65)), 
-                      linear-gradient(90deg, #22d3ee, #f472b6);
-    background-origin: border-box;
-    background-clip: content-box, border-box;
-}
-
-.settings-header {
-    font-weight: bold;
-    font-size: 0.8rem;
-    margin-bottom: 8px;
-    color: #fff;
-}
-
-.toggles-row {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    gap: 10px;
-}
-
-.toggle-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    flex: 1;
-}
-
-.toggle-item span {
-    font-size: 0.6rem;
-    color: #cbd5e1;
-    text-align: center;
-}
-
-/* Switch Toggle Style */
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 30px;
-    height: 18px;
-}
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #334155;
-    transition: .4s;
-    border-radius: 34px;
-    border: 1px solid rgba(255,255,255,0.2);
-}
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 14px;
-    width: 14px;
-    left: 1px;
-    bottom: 1px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-}
-input:checked + .slider {
-    background-color: #3b82f6;
-    border-color: #60a5fa;
-}
-input:checked + .slider:before {
-    transform: translateX(12px);
-}
-
-/* =========================================
-   SUB-MODALS
-   ========================================= */
-.sub-modal {
-    position: fixed;
-    top: 90px;
-    left: 16px;
-    right: 16px;
-    max-height: 70vh;
-    border-radius: 20px;
-    z-index: 200;
-    display: flex;
-    flex-direction: column;
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(56, 189, 248, 0.4));
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    color: #fff;
-    font-weight: bold;
-    font-size: 1rem;
-}
-
-.icon-btn-home {
-    background: rgba(255,255,255,0.1);
-    border: none;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-.icon-btn-home svg { width: 18px; height: 18px; stroke: #fff; }
-
-.modal-content-scroll {
-    padding: 15px;
-    overflow-y: auto;
-    max-height: 60vh;
-}
-
-/* Flight Cards inside Modals */
-.flight-row {
-    display: flex;
-    align-items: center;
-    background: rgba(255,255,255,0.05);
-    padding: 12px;
-    border-radius: 15px;
-    margin-bottom: 10px;
-    border: 1px solid rgba(255,255,255,0.05);
-}
-.airline-logo-small {
-    width: 35px;
-    height: 35px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.6rem;
-    font-weight: bold;
-    margin-right: 12px;
-}
-.flight-details { flex: 1; }
-.flight-route-bold { font-size: 0.9rem; font-weight: bold; color: #fff; }
-.flight-time-small { font-size: 0.7rem; color: #cbd5e1; margin-top: 2px; }
-.flight-status { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
-.badge-checked {
-    background: rgba(34, 197, 94, 0.2);
-    color: #4ade80;
-    font-size: 0.65rem;
-    padding: 4px 8px;
-    border-radius: 12px;
-    border: 1px solid rgba(74, 222, 128, 0.3);
-}
-.seat-small { font-size: 0.75rem; font-weight: bold; color: #fff; }
-.btn-checkin-small {
-    background: #3b82f6;
-    color: white;
-    border: none;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.7rem;
-    cursor: pointer;
-}
-
-.week-section h4 {
-    color: #94a3b8;
-    font-size: 0.8rem;
-    margin: 10px 0 5px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-.flight-row-simple {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 10px;
-    margin-bottom: 5px;
-    font-size: 0.85rem;
-    color: #e2e8f0;
-}
-
-.input-booking {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 10px;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 10px;
-    color: #fff;
-    font-size: 0.9rem;
-    box-sizing: border-box;
-}
-.input-booking:focus { outline: none; border-color: #3b82f6; }
-.btn-add-flight {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(90deg, #22d3ee, #3b82f6);
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.btn-logout {
-    width: 90%;
-    margin: 20px auto;
-    display: block;
-    padding: 15px;
-    background: rgba(239, 68, 68, 0.7);
-    backdrop-filter: blur(5px);
-    border: none;
-    border-radius: 12px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-/* Barra Superior Más Transparente */
-.top-bar.transparent-mode {
-    background: rgba(15, 23, 42, 0.4); /* Más transparente que antes (0.65) */
-    backdrop-filter: blur(8px); /* Un poco menos de blur para ver más el fondo */
-    border-color: rgba(255, 255, 255, 0.15);
-}
-
-/* Icono Logout Rojo */
-.logout-icon svg {
-    stroke: #ef4444 !important; /* Forzar color rojo */
-    filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.5));
-}
-
-/* Estilos específicos para Modal Settings */
-.settings-group {
-    margin-bottom: 20px;
-}
-.toggle-row-full {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    color: #e2e8f0;
-    font-size: 0.9rem;
-}
-.btn-logout-small {
-    width: 100%;
-    padding: 10px;
-    background: rgba(239, 68, 68, 0.2);
-    border: 1px solid rgba(239, 68, 68, 0.5);
-    color: #ef4444;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-}
-.btn-logout-small:hover {
-    background: rgba(239, 68, 68, 0.4);
-}
-
-/* Input datetime-local styling fix */
-.input-booking[type="datetime-local"] {
-    color: #fff; 
-}
-.input-booking[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    filter: invert(1);
-    cursor: pointer;
-}
-
-.input:focus { outline: none; border-color: #3b82f6; }
-    .hidden { display: none; }
-    .logo { text-align: center; margin: 32px 0 24px; }
-    .logo h1 { font-size: 24px; background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-.hidden { display: none !important; }
-
-/* =========================================
-   MEDIA QUERIES (OPTIMIZACIÓN MÓVIL)
-   ========================================= */
-@media (max-width: 768px) {
-    body {
-        /* En móviles, 'scroll' a veces rinde mejor que 'fixed' y evita parpadeos */
-        background-attachment: scroll; 
-        padding: 12px; /* Un poco menos de padding en pantallas pequeñas */
-    }
-    
-    .top-bar {
-        top: 12px;
-        height: 55px;
-    }
-    
-    .bottom-bar {
-        bottom: 12px;
-        left: 12px;
-        right: 12px;
-    }
-    
-    .sub-modal {
-        top: 80px;
-        left: 12px;
-        right: 12px;
-    }
-}
-
-/* =========================================
-   RESPONSIVE: MÓVIL FLOTANTE EN ESCRITORIO
-   ========================================= */
-
-
-
-/* Escritorio (Notebook): Limitar ancho y centrar */
-@media (min-width: 769px) {
-    body {
-        /* Fondo oscuro general para resaltar la app */
-        background-color: #050505; 
-        display: flex;
-        justify-content: center;
-        align-items: flex-start; /* Alineado arriba pero centrado horizontalmente */
-        padding-top: 20px;
-    }
-
-    .app-container {
-        /* Ancho fijo tipo móvil grande (ej. iPhone Max) */
-        width: 420px; 
-        max-width: 100%;
-        min-height: 850px; /* Altura mínima para simular pantalla larga */
-        
-        /* Efecto de teléfono flotando */
-        border-radius: 30px;
-        box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 0 10px #1e293b; /* Borde simulado de marco */
-        overflow: hidden; /* Recortar bordes redondeados */
-        position: relative;
-        background: transparent; /* Dejar ver el fondo de la app dentro */
-    }
-
-    /* Ajuste del fondo dentro del contenedor limitado */
-    .app-container body {
-        /* El body interno ya tiene el fondo, pero aseguramos que cubra el contenedor */
-        background-attachment: scroll !important; /* Evitar parallax raro en contenedor pequeño */
-    }
-    
-    /* Ajustar barras superiores/inferiores para que respeten el ancho limitado */
-    .top-bar, .bottom-bar, .sub-modal {
-        left: 16px;
-        right: 16px;
-        margin-left: 0;
-        margin-right: 0;
-    }
-    
-    .top-bar {
-        top: 16px;
-    }
-    
-    .sub-modal {
-        left: 16px;
-        right: 16px;
-        top: 90px;
+        max-width: 388px; /* 420 - 32 (márgenes laterales del container) */
     }
 }
