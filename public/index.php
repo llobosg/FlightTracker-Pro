@@ -1,7 +1,7 @@
 <?php
 // public/index.php
 
-// 1. Configuración de Headers
+// 1. Configuración de Headers (CORS)
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
@@ -17,9 +17,17 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/Database.php';
 require_once __DIR__ . '/../includes/Auth.php';
 
-// Iniciar Sesión
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+// Función auxiliar para validar token desde DB
+function validateToken($token) {
+    try {
+        $db = Database::getInstance();
+        $stmt = $db->prepare("SELECT user_id FROM user_sessions WHERE token = ?");
+        $stmt->execute([$token]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? $row['user_id'] : null;
+    } catch (Exception $e) {
+        return null;
+    }
 }
 
 // 3. Enrutamiento
@@ -32,10 +40,7 @@ if (strpos($uri, '/public') === 0) {
 }
 if ($uri === '') $uri = '/';
 
-// --- DEBUG: Logear todas las peticiones POST para ver qué llega ---
-if ($method === 'POST') {
-    error_log("DEBUG POST Request URI: " . $uri);
-}
+// --- RUTAS DE LA API ---
 
 // A. Registro
 if ($uri === '/api/register' && $method === 'POST') {
@@ -53,20 +58,26 @@ elseif ($uri === '/api/verify' && $method === 'POST') {
     exit();
 }
 
-// C. Login
+// C. Login (Guarda Token en DB)
 elseif ($uri === '/api/login' && $method === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
     $result = Auth::login($input['email'] ?? '', $input['password'] ?? '');
 
     if ($result['success']) {
-        $_SESSION['user_id'] = $result['user']['id'];
-        $_SESSION['user_email'] = $result['user']['email'];
+        $userId = $result['user']['id'];
+        $token = bin2hex(random_bytes(32));
         
-        echo json_encode([
-            'success' => true,
-            'token' => $result['token'], 
-            'user' => $result['user']
-        ]);
+        try {
+            $db = Database::getInstance();
+            $stmt = $db->prepare("INSERT INTO user_sessions (user_id, token) VALUES (?, ?)");
+            $stmt->execute([$userId, $token]);
+            // Limpiar tokens viejos
+            $db->prepare("DELETE FROM user_sessions WHERE user_id = ? AND token != ?")->execute([$userId, $token]);
+        } catch (Exception $e) {
+            error_log("Error guardando sesión: " . $e->getMessage());
+        }
+
+        echo json_encode(['success' => true, 'token' => $token, 'user' => $result['user']]);
     } else {
         http_response_code(401);
         echo json_encode(['success' => false, 'message' => $result['message']]);
@@ -74,32 +85,29 @@ elseif ($uri === '/api/login' && $method === 'POST') {
     exit();
 }
 
-// D. GUARDAR NUEVO VUELO
+// D. Guardar Vuelo (POST)
 elseif ($uri === '/api/flights' && $method === 'POST') {
-    // LOG DE DEPURACIÓN CRÍTICO
-    error_log("DEBUG: Entrando a /api/flights POST. Session ID: " . session_id());
-    error_log("DEBUG: User_ID en sesión: " . ($_SESSION['user_id'] ?? 'NO SET'));
+    $headers = getallheaders();
+    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    $token = str_replace('Bearer ', '', $authHeader);
+    $userId = validateToken($token);
 
-    if (!isset($_SESSION['user_id'])) {
-        error_log("ERROR: Sesión no válida en /api/flights");
+    if (!$userId) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'No autorizado: Sesión expirada.']);
+        echo json_encode(['success' => false, 'message' => 'No autorizado']);
         exit();
     }
-    $userId = $_SESSION['user_id'];
 
-    $jsonInput = file_get_contents('php://input');
-    $input = json_decode($jsonInput, true);
-
+    $input = json_decode(file_get_contents('php://input'), true);
     if (!$input || !isset($input['reservation_code'])) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Datos inválidos.']);
+        echo json_encode(['success' => false, 'message' => 'Datos inválidos']);
         exit();
     }
 
     try {
         $db = Database::getInstance();
-        $stmt = $db->prepare("INSERT INTO flights (user_id, airline_name, reservation_code, flight_number, origin_airport, destination_airport, departure_time, arrival_time, seat_number, gate_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $db->prepare("INSERT INTO flights (user_id, airline_name, reservation_code, flight_number, origin_airport, destination_airport, departure_time, arrival_time, seat_number, gate_info, status_api) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
         $stmt->execute([
             $userId,
@@ -111,30 +119,36 @@ elseif ($uri === '/api/flights' && $method === 'POST') {
             $input['departure_time'] ?? null,
             $input['arrival_time'] ?? null,
             $input['seat_number'] ?? null,
-            $input['gate_info'] ?? null
+            $input['gate_info'] ?? null,
+            null // status_api inicial
         ]);
 
         echo json_encode(['success' => true, 'message' => 'Vuelo guardado', 'id' => $db->lastInsertId()]);
-
     } catch (PDOException $e) {
         error_log("DB Error: " . $e->getMessage());
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Error DB.']);
+        echo json_encode(['success' => false, 'message' => 'Error DB']);
     }
     exit();
 }
 
-// E. Obtener Vuelos
+// E. Obtener Vuelos (GET)
 elseif ($uri === '/api/flights' && $method === 'GET') {
-    if (!isset($_SESSION['user_id'])) {
+    $headers = getallheaders();
+    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    $token = str_replace('Bearer ', '', $authHeader);
+    $userId = validateToken($token);
+
+    if (!$userId) {
         http_response_code(401);
         echo json_encode(['error' => 'No autorizado']);
         exit();
     }
+    
     try {
         $db = Database::getInstance();
         $stmt = $db->prepare("SELECT * FROM flights WHERE user_id = ? ORDER BY departure_time ASC");
-        $stmt->execute([$_SESSION['user_id']]);
+        $stmt->execute([$userId]);
         $flights = $stmt->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode(['success' => true, 'data' => $flights]);
     } catch (Exception $e) {
@@ -143,7 +157,92 @@ elseif ($uri === '/api/flights' && $method === 'GET') {
     exit();
 }
 
-// Servir Estáticos
+// F. ACTUALIZAR ESTADO DE VUELO (AviationStack)
+elseif ($uri === '/api/update-flight-status' && $method === 'POST') {
+    $headers = getallheaders();
+    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    $token = str_replace('Bearer ', '', $authHeader);
+    $userId = validateToken($token);
+
+    if (!$userId) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'No autorizado']);
+        exit();
+    }
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    $flightNumber = $input['flight_number'] ?? '';
+    $flightId = $input['flight_id'] ?? '';
+
+    if (!$flightNumber || !$flightId) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Faltan datos']);
+        exit();
+    }
+
+    $apiKey = getenv('AVIATION_STACK_KEY');
+    if (!$apiKey) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'API Key no configurada']);
+        exit();
+    }
+
+    // Consulta a AviationStack (Usamos HTTP por limitaciones de SSL en planes free a veces, o HTTPS si tienes certificado)
+    // Nota: AviationStack requiere HTTPS en producción, pero a veces falla en localhost sin config. 
+    // Usaremos https:// por seguridad.
+    $url = "https://api.aviationstack.com/v1/flights?access_key={$apiKey}&flight_iata={$flightNumber}";
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200 || !$response) {
+        error_log("AviationStack Error: $response");
+        echo json_encode(['success' => false, 'message' => 'Error consultando aerolínea']);
+        exit();
+    }
+
+    $data = json_decode($response, true);
+    
+    if (isset($data['data']) && count($data['data']) > 0) {
+        $flightInfo = $data['data'][0];
+        
+        $status = $flightInfo['flight_status'] ?? 'unknown';
+        $gate = $flightInfo['arrival']['gate'] ?? $flightInfo['departure']['gate'] ?? null;
+        $terminal = $flightInfo['arrival']['terminal'] ?? $flightInfo['departure']['terminal'] ?? null;
+        $delay = $flightInfo['arrival']['delay'] ?? 0;
+
+        try {
+            $db = Database::getInstance();
+            // Actualizamos gate_info y status_api
+            $stmt = $db->prepare("UPDATE flights SET gate_info = ?, status_api = ? WHERE id = ? AND user_id = ?");
+            $stmt->execute([$gate, $status, $flightId, $userId]);
+
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Estado actualizado',
+                'live_data' => [
+                    'gate' => $gate,
+                    'status' => $status,
+                    'delay' => $delay,
+                    'terminal' => $terminal
+                ]
+            ]);
+        } catch (PDOException $e) {
+            error_log("DB Update Error: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error al guardar']);
+        }
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Vuelo no encontrado']);
+    }
+    exit();
+}
+
+// --- SERVIDOR DE ESTÁTICOS ---
 if ($uri === '/' || $uri === '/index.php') {
     header("Content-Type: text/html; charset=UTF-8");
     $htmlFile = __DIR__ . '/assets/views/pwa.html';

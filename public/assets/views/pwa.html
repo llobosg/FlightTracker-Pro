@@ -21,7 +21,7 @@
     <!-- Logo / Header Inicial -->
     <div class="logo-header">
       <h1>✈️ FlightTracker Pro</h1>
-      <p style="color: #c50ba3; margin-top: 4px; font-size: 0.9rem;">Desarmar toboganes, crosscheck, reportar</p>
+      <p style="color: #df46c3; margin-top: 4px; font-size: 0.9rem;">Desarmar toboganes, crosscheck, reportar</p>
     </div>
 
     <!-- Formulario de Registro -->
@@ -486,9 +486,11 @@
             if (!res.ok) throw new Error('Error API');
             const result = await res.json();
             const flights = result.data || [];
+            
+            // Ordenar por fecha
             flights.sort((a, b) => new Date(a.departure_time) - new Date(b.departure_time));
 
-            // Home Stats
+            // --- HOME STATS ---
             document.getElementById('total-flights-count').innerText = flights.length;
             const upcomingList = document.getElementById('upcoming-trips-list');
             upcomingList.innerHTML = '';
@@ -501,11 +503,12 @@
                 upcomingList.innerHTML = '<span style="color:#64748b">Sin vuelos</span>';
             }
 
-            // Modal Calendario (Agrupado por Mes)
+            // --- MODAL CALENDARIO (Agrupado por Mes + Botón Actualizar) ---
             const calendarContainer = document.getElementById('flights-list-container');
             calendarContainer.innerHTML = '';
+            
             if (flights.length === 0) {
-                calendarContainer.innerHTML = '<p style="text-align:center;color:#cbd5e1;margin-top:20px;">Sin vuelos.</p>';
+                calendarContainer.innerHTML = '<p style="text-align:center;color:#cbd5e1;margin-top:20px;">Sin vuelos registrados.</p>';
             } else {
                 const grouped = {};
                 flights.forEach(f => {
@@ -523,21 +526,35 @@
                         const d = new Date(f.departure_time);
                         const time = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                         const dateShort = d.toLocaleDateString('es-ES', {weekday:'short', day:'numeric'});
+                        
+                        // Determinar color de estado
+                        let statusBadge = '';
+                        if (f.status_api) {
+                            const s = f.status_api.toLowerCase();
+                            const color = s === 'landed' ? '#4ade80' : (s === 'cancelled' ? '#ef4444' : '#fbbf24');
+                            statusBadge = `<div style="font-size:0.6rem; color:${color}; font-weight:bold; margin-top:2px;">${f.status_api.toUpperCase()}</div>`;
+                        }
+
                         htmlGroup += `
                         <div class="flight-row">
                             <div class="airline-logo-small" style="background:${getAirlineColor(f.airline_name)}">${f.airline_name ? f.airline_name.substring(0,3).toUpperCase() : 'FLT'}</div>
                             <div class="flight-details">
                                 <div class="flight-route-bold">${f.origin_airport} → ${f.destination_airport}</div>
                                 <div class="flight-time-small">${dateShort} • ${time} ${f.flight_number?'• '+f.flight_number:''}</div>
+                                ${f.gate_info ? `<div style="font-size:0.65rem; color:#fbbf24; margin-top:2px;">Puerta: ${f.gate_info}</div>` : ''}
+                                ${statusBadge}
                             </div>
-                            <div class="flight-status"><div class="seat-small">${f.seat_number||'--'}</div></div>
+                            <div class="flight-status">
+                                <div class="seat-small">${f.seat_number||'--'}</div>
+                                ${f.flight_number ? `<button onclick="updateFlightStatus(${f.id}, '${f.flight_number}')" style="background:none; border:none; color:#22d3ee; cursor:pointer; font-size:1.2rem; margin-left:5px;" title="Actualizar Estado"></button>` : ''}
+                            </div>
                         </div>`;
                     });
                     calendarContainer.innerHTML += htmlGroup;
                 }
             }
 
-            // Modal Esta Semana (CORREGIDO: Sin .function())
+            // --- MODAL ESTA SEMANA ---
             const weekContainer = document.getElementById('week-flights-list');
             weekContainer.innerHTML = '';
             const now = new Date();
@@ -552,7 +569,7 @@
             if (weekFlights.length === 0) {
                 weekContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#64748b;">No hay vuelos esta semana</div>';
             } else {
-                const weekGrouped = {}; // Objeto simple, NO función
+                const weekGrouped = {};
                 weekFlights.forEach(f => {
                      const d = new Date(f.departure_time);
                      const mKey = d.toLocaleDateString('es-ES', { month: 'long' });
@@ -560,7 +577,6 @@
                      weekGrouped[mKey].push(f);
                 });
 
-                // Iterar correctamente sobre el objeto
                 for (const [mName, mFlights] of Object.entries(weekGrouped)) {
                      const mNameFmt = mName.charAt(0).toUpperCase() + mName.slice(1);
                      weekContainer.innerHTML += `<h5 style="color:#94a3b8; font-size:0.8rem; margin:10px 0 5px;">${mNameFmt}</h5>`;
@@ -579,7 +595,7 @@
                              </div>
                              <div style="display:flex; justify-content:space-between; width:100%; font-size:0.75rem; color:#cbd5e1;">
                                  <span>${dayName} ${dayNum} • ${time}</span>
-                                 <span>${f.check_in_status==1 ? '✓ Checked In' : 'Check-in'}</span>
+                                 <span>${f.status_api ? f.status_api : 'Check-in'}</span>
                              </div>
                          </div>`;
                      });
@@ -628,6 +644,40 @@
             showView('register-form');
         }
     });
+
+    // Función para actualizar estado desde AviationStack
+    async function updateFlightStatus(flightId, flightNumber) {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const btn = event.target;
+        btn.style.transform = 'rotate(180deg)';
+        btn.style.transition = 'transform 0.5s';
+
+        try {
+            const res = await fetch('/api/update-flight-status', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ flight_id: flightId, flight_number: flightNumber })
+            });
+            const result = await res.json();
+
+            if (result.success) {
+                showToast(`✅ Estado actualizado: Puerta ${result.live_data.gate || 'N/A'}`, 'success');
+                // Recargar lista para ver cambios
+                setTimeout(() => loadFlights(), 1000);
+            } else {
+                showToast(result.message || 'Error al actualizar', 'error');
+            }
+        } catch (e) {
+            showToast('Error de conexión', 'error');
+        } finally {
+            btn.style.transform = 'rotate(0deg)';
+        }
+    }
 </script>
 </body>
 </html>
