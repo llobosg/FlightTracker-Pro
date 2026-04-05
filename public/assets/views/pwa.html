@@ -163,22 +163,16 @@
                       </div>
                   </div>
 
-                  <!-- SALIDA (Fecha + Hora 24h separados) -->
-                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Salida</label>
-                  <div style="display:flex; gap:8px;">
-                      <input type="date" name="departure_date" class="input-booking" style="flex:2;" readonly>
-                      <input type="time" name="departure_time_input" class="input-booking" step="60" style="flex:1;" readonly>
+                  <div style="display:flex; gap:10px;">
+                      <div style="flex:1">
+                        <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Salida</label>
+                        <input type="datetime-local" name="departure_time" class="input-booking" readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
+                      </div>
+                      <div style="flex:1">
+                        <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Llegada</label>
+                        <input type="datetime-local" name="arrival_time" class="input-booking" readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
+                      </div>
                   </div>
-                  <!-- Campo oculto para enviar el valor combinado al backend -->
-                  <input type="hidden" name="departure_time">
-
-                  <!-- LLEGADA (Fecha + Hora 24h separados) -->
-                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block; margin-top:10px;">Llegada</label>
-                  <div style="display:flex; gap:8px;">
-                      <input type="date" name="arrival_date" class="input-booking" style="flex:2;" readonly>
-                      <input type="time" name="arrival_time_input" class="input-booking" step="60" style="flex:1;" readonly>
-                  </div>
-                  <input type="hidden" name="arrival_time">
                    
                   <!-- 🔹 Botón para habilitar edición manual si la API falla o el usuario quiere corregir -->
                   <button type="button" onclick="enableManualEdit()" style="background:none; border:none; color:#22d3ee; font-size:0.75rem; cursor:pointer; margin:10px 0 15px 0; display:flex; align-items:center; gap:5px; width:100%; justify-content:center;">
@@ -1113,7 +1107,7 @@
         }
     }
 
-    // 📝 Función para rellenar formulario con datos de la API (VERSIÓN FINAL)
+    // 📝 Función para rellenar formulario con datos de la API (VERSIÓN FINAL UNIFICADA)
     function fillFlightForm(flightData) {
         if (!flightData) return;
         
@@ -1124,39 +1118,39 @@
         if (flightData.origin) form.elements['origin_airport'].value = flightData.origin;
         if (flightData.destination) form.elements['destination_airport'].value = flightData.destination;
         
-        // Formatear fechas para inputs separados (FORMATO 24H GARANTIZADO)
+        // Formatear para input datetime-local (ISO: YYYY-MM-DDTHH:mm) - El navegador lo mostrará según su locale
         if (flightData.scheduled_departure) {
             const depDate = new Date(flightData.scheduled_departure);
-            // Fecha: YYYY-MM-DD
-            form.elements['departure_date'].value = depDate.toISOString().slice(0, 10);
-            // Hora 24h: HH:mm
-            form.elements['departure_time_input'].value = depDate.toTimeString().slice(0, 5);
-            // Campo oculto combinado para enviar al backend
+            // Ajustar timezone para mostrar hora local
+            depDate.setMinutes(depDate.getMinutes() - depDate.getTimezoneOffset());
+            // Formato ISO para el VALUE del input (siempre correcto para el backend)
             form.elements['departure_time'].value = depDate.toISOString().slice(0, 16);
         }
         if (flightData.scheduled_arrival) {
             const arrDate = new Date(flightData.scheduled_arrival);
-            form.elements['arrival_date'].value = arrDate.toISOString().slice(0, 10);
-            form.elements['arrival_time_input'].value = arrDate.toTimeString().slice(0, 5);
+            arrDate.setMinutes(arrDate.getMinutes() - arrDate.getTimezoneOffset());
             form.elements['arrival_time'].value = arrDate.toISOString().slice(0, 16);
         }
         
-        // Texto de estado en una sola línea
+        // Texto de estado en UNA sola línea (sin saltos)
         const statusEl = document.getElementById('flight-search-status');
         if (statusEl) {
             statusEl.innerText = `✅ Vuelo encontrado • ${flightData.airline || 'Desconocida'}`;
             statusEl.className = 'success';
+            // Forzar que no salte de línea con CSS inline por seguridad
+            statusEl.style.whiteSpace = 'nowrap';
+            statusEl.style.overflow = 'hidden';
+            statusEl.style.textOverflow = 'ellipsis';
         }
     }
 
     // ✏️ Función para habilitar edición manual de campos autocompletados
     function enableManualEdit() {
         const form = document.getElementById('booking-form');
-        // Lista de campos a desbloquear (incluye los nuevos separados)
+        // Campos a desbloquear (incluye datetime-local)
         const readonlyFields = [
             'airline_name', 'origin_airport', 'destination_airport', 
-            'departure_date', 'departure_time_input', 
-            'arrival_date', 'arrival_time_input'
+            'departure_time', 'arrival_time'
         ];
         
         readonlyFields.forEach(fieldName => {
@@ -1228,21 +1222,18 @@
             form.elements['seat_number'].value = flightData.seat_number || '';
             form.elements['gate_info'].value = flightData.gate_info || '';
 
-            // Rellenar campos separados de fecha/hora
+            // Rellenar campos datetime-local
             if (flightData.departure_time) {
                 const depDate = new Date(flightData.departure_time);
-                form.elements['departure_date'].value = depDate.toISOString().slice(0, 10);
-                form.elements['departure_time_input'].value = depDate.toTimeString().slice(0, 5);
+                depDate.setMinutes(depDate.getMinutes() - depDate.getTimezoneOffset());
                 form.elements['departure_time'].value = depDate.toISOString().slice(0, 16);
             }
             if (flightData.arrival_time) {
                 const arrDate = new Date(flightData.arrival_time);
-                form.elements['arrival_date'].value = arrDate.toISOString().slice(0, 10);
-                form.elements['arrival_time_input'].value = arrDate.toTimeString().slice(0, 5);
+                arrDate.setMinutes(arrDate.getMinutes() - arrDate.getTimezoneOffset());
                 form.elements['arrival_time'].value = arrDate.toISOString().slice(0, 16);
             }
             
-            // Desbloquear todos los campos para edición
             enableManualEdit();
             
         } else {
