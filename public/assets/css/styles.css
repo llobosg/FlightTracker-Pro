@@ -97,29 +97,35 @@ body {
 .nav-icon svg { width: 24px; height: 24px; stroke: #fff; opacity: 0.9; cursor: pointer; }
 .logout-icon svg { stroke: #ef4444 !important; }
 
-/* Contenedor Principal: Define el ancho máximo global */
+/* =========================================
+   LAYOUT PRINCIPAL (Ancho Consistente)
+   ========================================= */
+
+/* Contenedor Principal: Igual ancho que Barra Superior y Submodales */
 .main-content {
     display: flex;
     justify-content: space-between;
-    /* Espacio lateral uniforme */
+    
+    /* CLAVE: Mismos márgenes laterales que .top-bar (16px) */
     padding: 0 16px; 
+    
     gap: 15px;
     align-items: stretch;
     
-    /* CLAVE: Ancho máximo igual al de los submodales para consistencia */
+    /* CLAVE: Ancho máximo limitado para que no toque bordes en móvil grande */
     width: 100%;
-    max-width: 388px; /* Mismo ancho aprox que tus submodales */
-    margin: 0 auto;   /* Centrar horizontalmente */
+    max-width: 388px; /* Mismo ancho que tus submodales */
+    margin: 0 auto;   /* Centrado */
 }
 
-/* Espacio superior general (entre Barra Superior y Fichas) */
+/* Grupo de Fichas (Izquierda) */
 .stats-group {
-    flex: 7;
+    flex: 7; /* Ocupa ~70% del espacio disponible */
     display: flex;
     flex-direction: column;
     gap: 15px; /* Espacio ENTRE Próximo Vuelo y Total Flights */
     
-    /* CLAVE: Espacio superior igual al gap interno (15px) para separar de la barra */
+    /* CLAVE: Espacio superior igual al gap (15px) para separar de la barra */
     margin-top: 15px; 
 }
 /* Ficha Total Flights */
@@ -148,40 +154,6 @@ body {
 .stat-value { font-size: 1.5rem; font-weight: bold; }
 .highlight-cyan { color: #22d3ee; text-shadow: 0 0 10px rgba(34, 211, 238, 0.6); }
 .trip-list { font-size: 0.7rem; color: #94a3b8; line-height: 1.4; }
-
-/* Contenedor del Botón Burbuja */
-.bubble-container {
-    flex: 3;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    
-    /* CLAVE: Margen superior igual al de stats-group (15px) para alineación */
-    margin-top: 15px; 
-}
-.bubble-btn {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-.bubble-btn svg { width: 35px; height: 35px; stroke: #fff; }
-.bubble-label {
-    margin-top: 8px;
-    font-size: 0.65rem;
-    color: #fff;
-    text-align: center;
-    font-weight: bold;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-}
 
 /* =========================================
    SUB-MODALS (LÓGICA UNIFICADA)
@@ -407,12 +379,7 @@ input:checked + .slider:before { transform: translateX(12px); }
     border: 1px solid rgba(34, 211, 238, 0.3); /* Borde cyan sutil */
     box-shadow: 0 4px 20px rgba(34, 211, 238, 0.1);
 }
-/* Detalles internos de la ficha compacta */
-.next-flight-details-mini {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
+
 /* Ficha Próximo Vuelo */
 .next-flight-card-compact {
     padding: 15px;
@@ -429,8 +396,7 @@ input:checked + .slider:before { transform: translateX(12px); }
     border: 1px solid rgba(34, 211, 238, 0.3);
     box-shadow: 0 4px 15px rgba(34, 211, 238, 0.1);
     
-    /* Asegurar que no se salga del contenedor */
-    width: 100%; 
+    width: 100%; /* Ocupa todo el ancho de su padre (.stats-group) */
     box-sizing: border-box;
 }
 .flight-detail-row {
@@ -469,14 +435,18 @@ input:checked + .slider:before { transform: translateX(12px); }
     min-height: 80px;
 }
 
-/* Burbuja (Sin cambios mayores, solo asegurando alineación) */
+/* Contenedor Botón Burbuja (Derecha) */
 .bubble-container {
-    flex: 3;
+    flex: 3; /* Ocupa ~30% del espacio */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    
+    /* CLAVE: Mismo margen superior que .stats-group (15px) */
+    margin-top: 15px; 
 }
+
 .bubble-btn {
     width: 70px;
     height: 70px;
