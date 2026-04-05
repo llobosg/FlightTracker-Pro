@@ -206,24 +206,18 @@ elseif ($uri === '/api/update-flight-status' && $method === 'POST') {
     $data = json_decode($response, true);
     
     if (isset($data['data']) && count($data['data']) > 0) {
-        $flightInfo = $data['data'][0]; // Tomamos el primero (a veces devuelve histórico y actual)
+        $flightInfo = $data['data'][0]; 
         
         $status = $flightInfo['flight_status'] ?? 'unknown';
         $gate = $flightInfo['arrival']['gate'] ?? $flightInfo['departure']['gate'] ?? null;
-        
-        // NUEVO: Extraer Delay y Horarios Reales
         $delay = $flightInfo['arrival']['delay'] ?? $flightInfo['departure']['delay'] ?? 0;
         $actualDeparture = $flightInfo['departure']['actual'] ?? null;
         $estimatedArrival = $flightInfo['arrival']['estimated'] ?? null;
-        
-        // Info en vivo
         $isFlying = isset($flightInfo['live']) && !$flightInfo['live']['is_ground'];
         $altitude = isset($flightInfo['live']) ? $flightInfo['live']['altitude'] : null;
 
         try {
             $db = Database::getInstance();
-            // Actualizamos más columnas (necesitarás agregarlas a la tabla flights si quieres guardarlas permanentemente)
-            // Por ahora, solo actualizamos gate y status, pero devolvemos el resto al frontend para mostrarlo directo
             $stmt = $db->prepare("UPDATE flights SET gate_info = ?, status_api = ? WHERE id = ? AND user_id = ?");
             $stmt->execute([$gate, $status, $flightId, $userId]);
 
@@ -242,20 +236,14 @@ elseif ($uri === '/api/update-flight-status' && $method === 'POST') {
                 ]
             ]);
         } catch (PDOException $e) {
-            echo json_encode(['success' => false, 'message' => 'Vuelo no encontrado en API']);
+            error_log("DB Update Error: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error al guardar en BD']);
         }
     } else {
         echo json_encode(['success' => false, 'message' => 'Vuelo no encontrado en API']);
     }
     exit();
 }
-
-
-
-echo json_encode(['success' => false, 'message' => 'Vuelo no encontrado en API']);
-
-
-
 
 // G. GUARDAR PREFERENCIAS DE NOTIFICACIÓN
 elseif ($uri === '/api/save-preferences' && $method === 'POST') {
@@ -301,7 +289,6 @@ elseif ($uri === '/api/save-preferences' && $method === 'POST') {
 
 // H. CHECK DAILY NOTIFICATIONS (Para Cron-job.org)
 elseif ($uri === '/api/check-daily-notifications' && $method === 'GET') {
-    // Seguridad: Clave secreta requerida
     $secretKey = $_GET['key'] ?? '';
     if ($secretKey !== getenv('CRON_SECRET_KEY')) {
         http_response_code(403);
@@ -313,7 +300,6 @@ elseif ($uri === '/api/check-daily-notifications' && $method === 'GET') {
         $db = Database::getInstance();
         $today = date('Y-m-d');
         
-        // Obtener vuelos de HOY
         $stmt = $db->prepare("
             SELECT f.*, u.email, u.name, up.email_alerts, up.whatsapp_reminder, up.whatsapp_number
             FROM flights f
@@ -327,16 +313,10 @@ elseif ($uri === '/api/check-daily-notifications' && $method === 'GET') {
         $flights = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $sentCount = 0;
-        // NOTA: Aquí deberías incluir require_once 'BrevoMailer.php' y llamar a send()
-        // Por ahora simulamos el envío en logs
         foreach ($flights as $flight) {
             $time = date('H:i', strtotime($flight['departure_time']));
             $subject = "✈️ Recordatorio: Tu vuelo {$flight['flight_number']} hoy a las {$time}";
-            $body = "Hola {$flight['name']},\n\nTu vuelo {$flight['flight_number']} ({ $flight['origin_airport']} → {$flight['destination_airport']}) sale hoy a las {$time}.\n\nPuerta: " . ($flight['gate_info'] ?? 'Por confirmar') . "\n\n¡Buen viaje!";
-            
-            // Simulación de envío (Descomentar cuando tengas BrevoMailer listo)
-            // $mailer = new BrevoMailer();
-            // if($mailer->send($flight['email'], $subject, $body)) { ... }
+            $body = "Hola {$flight['name']},\n\nTu vuelo {$flight['flight_number']} ({$flight['origin_airport']} → {$flight['destination_airport']}) sale hoy a las {$time}.\n\nPuerta: " . ($flight['gate_info'] ?? 'Por confirmar') . "\n\n¡Buen viaje!";
             
             error_log("EMAIL SIMULADO a {$flight['email']}: $subject");
             $sentCount++;
@@ -377,7 +357,7 @@ elseif ($uri === '/api/get-today-alerts' && $method === 'GET') {
 
         $alerts = [];
         foreach ($flights as $f) {
-            if ($f['push_notifications'] !== 0) { // Si el usuario activó push
+            if ($f['push_notifications'] !== 0) {
                 $time = date('H:i', strtotime($f['departure_time']));
                 $msg = "Vuelo {$f['flight_number']} ($f[origin_airport] → $f[destination_airport]) hoy a las $time.";
                 if ($f['gate_info']) $msg .= " Puerta: $f[gate_info]";
