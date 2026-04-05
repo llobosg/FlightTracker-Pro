@@ -43,7 +43,7 @@ body {
 }
 .logo-header h1 { 
     font-size: 1.5rem; 
-    background: linear-gradient(135deg, #60a5fa, #a78bfa); 
+    background: linear-gradient(135deg, #8660fa, #9b7cf5); 
     -webkit-background-clip: text; 
     -webkit-text-fill-color: transparent; 
 }

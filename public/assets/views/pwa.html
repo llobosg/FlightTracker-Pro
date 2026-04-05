@@ -21,7 +21,7 @@
     <!-- Logo / Header Inicial -->
     <div class="logo-header">
       <h1>✈️ FlightTracker Pro</h1>
-      <p style="color: #94a3b8; margin-top: 4px; font-size: 0.9rem;">Desarmar toboganes, crosscheck, reportar</p>
+      <p style="color: #c50ba3; margin-top: 4px; font-size: 0.9rem;">Desarmar toboganes, crosscheck, reportar</p>
     </div>
 
     <!-- Formulario de Registro -->
@@ -219,150 +219,194 @@
   </div> <!-- Fin App Container -->
 
   <script>
+    // --- SISTEMA DE NOTIFICACIONES TOAST ---
+    function showToast(message, type = 'success') {
+        // Crear elemento toast si no existe
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.style.cssText = `
+                position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+                z-index: 9999; display: flex; flex-direction: column; gap: 10px;
+                pointer-events: none; width: 90%; max-width: 400px; align-items: center;
+            `;
+            document.body.appendChild(toastContainer);
+        }
+
+        const toast = document.createElement('div');
+        const bgColor = type === 'error' ? 'rgba(239, 68, 68, 0.9)' : 
+                        type === 'warning' ? 'rgba(251, 191, 36, 0.9)' : 
+                        'rgba(34, 197, 94, 0.9)';
+        const icon = type === 'error' ? '⚠️' : type === 'warning' ? 'ℹ️' : '✅';
+
+        toast.innerHTML = `<div style="
+            background: ${bgColor}; color: white; padding: 12px 20px; border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); backdrop-filter: blur(5px);
+            font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 10px;
+            animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255,255,255,0.2);
+        ">${icon} <span>${message}</span></div>`;
+
+        // Animación CSS inyectada
+        if (!document.getElementById('toast-anim-style')) {
+            const style = document.createElement('style');
+            style.id = 'toast-anim-style';
+            style.textContent = `
+                @keyframes slideUpFade {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes fadeOut {
+                    to { opacity: 0; transform: translateY(10px); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        toastContainer.appendChild(toast);
+
+        // Eliminar después de 3.5 segundos
+        setTimeout(() => {
+            toast.style.animation = 'fadeOut 0.4s ease forwards';
+            setTimeout(() => toast.remove(), 400);
+            // Limpiar contenedor si está vacío
+            if (toastContainer.children.length === 0) toastContainer.remove();
+        }, 3500);
+    }
+
+    // --- LÓGICA DE LA APP ---
+
     // Registrar Service Worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('SW registrado:', reg.scope))
-        .catch(err => console.log('SW error:', err));
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW registrado:', reg.scope))
+            .catch(err => console.log('SW error:', err));
     }
 
     const API = window.location.origin + '/api'; 
 
-    // Navegación simple
     function showView(viewId) {
-      ['register-form', 'login-form', 'verify-form', 'dashboard'].forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.classList.add('hidden');
-      });
-      const target = document.getElementById(viewId);
-      if(target) target.classList.remove('hidden');
+        ['register-form', 'login-form', 'verify-form', 'dashboard'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.classList.add('hidden');
+        });
+        const target = document.getElementById(viewId);
+        if(target) target.classList.remove('hidden');
     }
 
     function showLogin() { showView('login-form'); }
     
     async function register() {
-      const name = document.getElementById('reg-name').value;
-      const email = document.getElementById('reg-email').value;
-      const password = document.getElementById('reg-pass').value;
-      try {
-        const res = await fetch(`${API}/register`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          document.getElementById('verify-email').textContent = email;
-          currentUser = { email, tempId: data.user_id };
-          showView('verify-form');
-        } else { alert(data.message || 'Error en registro'); }
-      } catch (e) { alert('Error de conexión.'); }
+        const name = document.getElementById('reg-name').value;
+        const email = document.getElementById('reg-email').value;
+        const password = document.getElementById('reg-pass').value;
+        try {
+            const res = await fetch(`${API}/register`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                document.getElementById('verify-email').textContent = email;
+                currentUser = { email, tempId: data.user_id };
+                showView('verify-form');
+                showToast('Registro exitoso. Revisa tu correo.', 'success');
+            } else { 
+                showToast(data.message || 'Error en registro', 'error'); 
+            }
+        } catch (e) { showToast('Error de conexión.', 'error'); }
     }
 
     async function verifyCode() {
-      const code = document.getElementById('verify-code').value;
-      try {
-        const res = await fetch(`${API}/verify`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: currentUser.email, code })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          alert('✅ Cuenta verificada.');
-          showView('login-form');
-        } else { alert(data.message || 'Código inválido'); }
-      } catch (e) { alert('Error de conexión'); }
+        const code = document.getElementById('verify-code').value;
+        try {
+            const res = await fetch(`${API}/verify`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: currentUser.email, code })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast('Cuenta verificada. Inicia sesión.', 'success');
+                setTimeout(() => showView('login-form'), 1500);
+            } else { 
+                showToast(data.message || 'Código inválido', 'error'); 
+            }
+        } catch (e) { showToast('Error de conexión', 'error'); }
     }
 
     async function login() {
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-pass').value;
-      try {
-        const res = await fetch(`${API}/login`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          // Guardamos token Y user (asegurando que sea un string válido)
-          localStorage.setItem('token', data.token);
-          if (data.user) {
-             localStorage.setItem('user', JSON.stringify(data.user));
-          } else {
-             // Fallback si el backend no envía user
-             localStorage.setItem('user', JSON.stringify({ email: email }));
-          }
-          showView('dashboard');
-          initDashboard(); // Inicializar dashboard inmediatamente
-        } else { alert(data.message || 'Credenciales inválidas'); }
-      } catch (e) { alert('Error de conexión'); }
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-pass').value;
+        try {
+            const res = await fetch(`${API}/login`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (data.success) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                showView('dashboard');
+                initDashboard();
+                showToast(`Bienvenido, ${data.user.name || 'Usuario'}!`, 'success');
+            } else { 
+                showToast(data.message || 'Credenciales inválidas', 'error'); 
+            }
+        } catch (e) { showToast('Error de conexión', 'error'); }
     }
 
-    function resendCode() { alert('📧 Código reenviado (simulación)'); }
+    function resendCode() { showToast(' Código reenviado (simulación)', 'success'); }
 
     // Funciones de Modales
     function toggleModal(modalId) {
-      console.log("Abriendo modal:", modalId);
-      closeAllModals();
-      const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.classList.remove('hidden');
-      } else {
-        console.error("Modal NO encontrado:", modalId);
-      }
+        closeAllModals();
+        const modal = document.getElementById(modalId);
+        if (modal) modal.classList.remove('hidden');
     }
 
     function closeAllModals() {
-      document.querySelectorAll('.sub-modal').forEach(m => m.classList.add('hidden'));
+        document.querySelectorAll('.sub-modal').forEach(m => m.classList.add('hidden'));
     }
 
-        // --- LÓGICA DE VALIDACIÓN Y FORMULARIO ---
-
-    // 1. Autocompletado Origen/Destino (SCL <-> CLO)
-    const originInput = document.querySelector('input[name="origin_airport"]');
-    const destInput = document.querySelector('input[name="destination_airport"]');
-
-    if (originInput && destInput) {
-        originInput.addEventListener('change', function() {
-            const val = this.value.toUpperCase();
-            if (val === 'SCL') destInput.value = 'CLO';
-            if (val === 'CLO') destInput.value = 'SCL';
-        });
-
-        destInput.addEventListener('change', function() {
-            const val = this.value.toUpperCase();
-            if (val === 'SCL') originInput.value = 'CLO';
-            if (val === 'CLO') originInput.value = 'SCL';
-        });
-        
-        // Forzar mayúsculas al escribir
-        [originInput, destInput].forEach(input => {
-            input.addEventListener('input', function() {
-                this.value = this.value.toUpperCase();
+    // Autocompletado Origen/Destino
+    document.addEventListener('DOMContentLoaded', () => {
+        const originInput = document.querySelector('input[name="origin_airport"]');
+        const destInput = document.querySelector('input[name="destination_airport"]');
+        if (originInput && destInput) {
+            originInput.addEventListener('change', function() {
+                const val = this.value.toUpperCase();
+                if (val === 'SCL') destInput.value = 'CLO';
+                if (val === 'CLO') destInput.value = 'SCL';
             });
-        });
-    }
+            destInput.addEventListener('change', function() {
+                const val = this.value.toUpperCase();
+                if (val === 'SCL') originInput.value = 'CLO';
+                if (val === 'CLO') originInput.value = 'SCL';
+            });
+            [originInput, destInput].forEach(input => {
+                input.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
+            });
+        }
+    });
 
-    // 2. Función Principal de Guardar con Validaciones
+    // Lógica New Booking con Validaciones
     async function handleNewBooking(event) {
         event.preventDefault();
         const form = event.target;
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
-
-        // Normalizar datos
         data.origin_airport = data.origin_airport.toUpperCase();
         data.destination_airport = data.destination_airport.toUpperCase();
-        
-        // Validación Básica de Ruta (Solo SCL-CLO o CLO-SCL por ahora)
+
         const validRoutes = ['SCL-CLO', 'CLO-SCL'];
-        const currentRoute = `${data.origin_airport}-${data.destination_airport}`;
-        if (!validRoutes.includes(currentRoute)) {
-            alert('Por ahora solo permitimos rutas entre SCL y CLO.');
+        if (!validRoutes.includes(`${data.origin_airport}-${data.destination_airport}`)) {
+            showToast('Solo rutas SCL ↔ CLO permitidas.', 'warning');
             return;
         }
 
         const token = localStorage.getItem('token');
-        if (!token) { alert('Sesión expirada.'); location.reload(); return; }
+        if (!token) { showToast('Sesión expirada.', 'error'); location.reload(); return; }
 
         const btn = form.querySelector('button[type="submit"]');
         const originalText = btn.innerText;
@@ -370,88 +414,69 @@
         btn.disabled = true;
 
         try {
-            // PASO A: Verificar Duplicados Exactos (Misma fecha/hora/ruta)
-            // Primero obtenemos los vuelos actuales del usuario para validar localmente (más rápido)
+            // Obtener vuelos actuales
             const resCheck = await fetch('/api/flights', { headers: { 'Authorization': `Bearer ${token}` }});
             const resultCheck = await resCheck.json();
             const existingFlights = resultCheck.data || [];
-
             const depTime = new Date(data.departure_time);
-            
-            // Buscar duplicado exacto
+
+            // Validar Duplicados
             const isDuplicate = existingFlights.some(f => 
                 f.origin_airport === data.origin_airport &&
                 f.destination_airport === data.destination_airport &&
-                Math.abs(new Date(f.departure_time) - depTime) < (60 * 1000) // Diferencia menor a 1 minuto
+                Math.abs(new Date(f.departure_time) - depTime) < (60 * 1000)
             );
 
-            if (isDuplicate) {
-                btn.innerText = originalText;
-                btn.disabled = false;
-                if (!confirm('⚠️ Ya existe un vuelo registrado con esta misma ruta y hora aproximada.\n¿Deseas agregarlo de todas formas?')) {
-                    return; // Cancelar si el usuario dice NO
-                }
+            if (isDuplicate && !confirm('⚠️ Ya existe un vuelo similar. ¿Agregar igual?')) {
+                btn.innerText = originalText; btn.disabled = false; return;
             }
 
-            // PASO B: Validar Vuelo de Retorno (Solo si es ruta principal)
-            // Lógica: Si voy SCL->CLO el Lunes, ¿hay retorno CLO->SCL esa misma semana?
-            let missingReturnWarning = false;
-            
-            // Definir rango de la semana (Lunes a Domingo de la fecha de salida)
+            // Validar Retorno
             const startOfWeek = new Date(depTime);
-            startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1); // Lunes
+            startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1); 
             startOfWeek.setHours(0,0,0,0);
-            
             const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(endOfWeek.getDate() + 6); // Domingo
+            endOfWeek.setDate(endOfWeek.getDate() + 6); 
             endOfWeek.setHours(23,59,59,999);
 
-            // Buscar retorno inverso dentro de esa semana
             const hasReturn = existingFlights.some(f => {
                 const fDate = new Date(f.departure_time);
-                return f.origin_airport === data.destination_airport && // Origen es mi destino
-                       f.destination_airport === data.origin_airport &&   // Destino es mi origen
+                return f.origin_airport === data.destination_airport &&
+                       f.destination_airport === data.origin_airport &&
                        fDate >= startOfWeek && fDate <= endOfWeek;
             });
 
-            if (!hasReturn) {
-                if (!confirm(`ℹ️ No se encontró un vuelo de RETORNO (${data.destination_airport} → ${data.origin_airport}) registrado para esta misma semana.\n¿Deseas continuar guardando solo el ida?`)) {
-                    btn.innerText = originalText;
-                    btn.disabled = false;
-                    return;
-                }
+            if (!hasReturn && !confirm(`ℹ️ No hay vuelo de retorno (${data.destination_airport}→${data.origin_airport}) esta semana. ¿Continuar?`)) {
+                btn.innerText = originalText; btn.disabled = false; return;
             }
 
-            // PASO C: Si pasa las validaciones, GUARDAR
+            // Guardar
             btn.innerText = 'Guardando...';
-            
             const response = await fetch('/api/flights', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(data)
             });
-            
             const result = await response.json();
             
             if (response.ok) {
-                alert('✅ Vuelo agregado correctamente');
+                showToast('✅ Vuelo agregado correctamente', 'success');
                 closeAllModals();
                 form.reset();
-                loadFlights(); // Recargar lista
+                loadFlights();
             } else {
-                alert('Error: ' + (result.message || 'No se pudo guardar'));
+                showToast('Error: ' + (result.message || 'No se pudo guardar'), 'error');
             }
-
         } catch (error) {
             console.error(error);
-            alert('Error de conexión al validar/guardar.');
+            showToast('Error de conexión.', 'error');
         } finally {
             btn.innerText = originalText;
             btn.disabled = false;
         }
     }
 
-    // 3. Función loadFlights Actualizada (Agrupación por Mes y Formato Semana)
+    // Carga de Vuelos CORREGIDA
     async function loadFlights() {
         const token = localStorage.getItem('token');
         if (!token) return;
@@ -461,11 +486,9 @@
             if (!res.ok) throw new Error('Error API');
             const result = await res.json();
             const flights = result.data || [];
-
-            // Ordenar cronológicamente
             flights.sort((a, b) => new Date(a.departure_time) - new Date(b.departure_time));
 
-            // --- ACTUALIZAR HOME ---
+            // Home Stats
             document.getElementById('total-flights-count').innerText = flights.length;
             const upcomingList = document.getElementById('upcoming-trips-list');
             upcomingList.innerHTML = '';
@@ -478,34 +501,28 @@
                 upcomingList.innerHTML = '<span style="color:#64748b">Sin vuelos</span>';
             }
 
-            // --- ACTUALIZAR MODAL CALENDARIO (Agrupado por Mes) ---
+            // Modal Calendario (Agrupado por Mes)
             const calendarContainer = document.getElementById('flights-list-container');
             calendarContainer.innerHTML = '';
-
             if (flights.length === 0) {
-                calendarContainer.innerHTML = '<p style="text-align:center;color:#cbd5e1;margin-top:20px;">Sin vuelos registrados.</p>';
+                calendarContainer.innerHTML = '<p style="text-align:center;color:#cbd5e1;margin-top:20px;">Sin vuelos.</p>';
             } else {
-                // Agrupar por Mes-Año
                 const grouped = {};
                 flights.forEach(f => {
                     const d = new Date(f.departure_time);
-                    const key = d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }); // Ej: "abril de 2024"
+                    const key = d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
                     if (!grouped[key]) grouped[key] = [];
                     grouped[key].push(f);
                 });
 
-                // Renderizar grupos
                 for (const [monthName, monthFlights] of Object.entries(grouped)) {
-                    // Capitalizar primera letra del mes
                     const formattedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-                    
                     let htmlGroup = `<h4 style="color:#22d3ee; margin: 15px 0 10px 0; text-transform:uppercase; font-size:0.9rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px;">${formattedMonth}</h4>`;
                     
                     monthFlights.forEach(f => {
                         const d = new Date(f.departure_time);
                         const time = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                         const dateShort = d.toLocaleDateString('es-ES', {weekday:'short', day:'numeric'});
-                        
                         htmlGroup += `
                         <div class="flight-row">
                             <div class="airline-logo-small" style="background:${getAirlineColor(f.airline_name)}">${f.airline_name ? f.airline_name.substring(0,3).toUpperCase() : 'FLT'}</div>
@@ -513,20 +530,16 @@
                                 <div class="flight-route-bold">${f.origin_airport} → ${f.destination_airport}</div>
                                 <div class="flight-time-small">${dateShort} • ${time} ${f.flight_number?'• '+f.flight_number:''}</div>
                             </div>
-                            <div class="flight-status">
-                                <div class="seat-small">${f.seat_number||'--'}</div>
-                            </div>
+                            <div class="flight-status"><div class="seat-small">${f.seat_number||'--'}</div></div>
                         </div>`;
                     });
-                    
                     calendarContainer.innerHTML += htmlGroup;
                 }
             }
 
-            // --- ACTUALIZAR MODAL ESTA SEMANA (Formato Compacto) ---
+            // Modal Esta Semana (CORREGIDO: Sin .function())
             const weekContainer = document.getElementById('week-flights-list');
             weekContainer.innerHTML = '';
-            
             const now = new Date();
             const nextWeek = new Date();
             nextWeek.setDate(now.getDate() + 7);
@@ -539,8 +552,7 @@
             if (weekFlights.length === 0) {
                 weekContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#64748b;">No hay vuelos esta semana</div>';
             } else {
-                // Agrupar también por mes dentro de la semana si cruza mes
-                const weekGrouped = {};
+                const weekGrouped = {}; // Objeto simple, NO función
                 weekFlights.forEach(f => {
                      const d = new Date(f.departure_time);
                      const mKey = d.toLocaleDateString('es-ES', { month: 'long' });
@@ -548,13 +560,14 @@
                      weekGrouped[mKey].push(f);
                 });
 
-                for (const [mName, mFlights] of Object.entries(weekGrouped())) {
+                // Iterar correctamente sobre el objeto
+                for (const [mName, mFlights] of Object.entries(weekGrouped)) {
                      const mNameFmt = mName.charAt(0).toUpperCase() + mName.slice(1);
                      weekContainer.innerHTML += `<h5 style="color:#94a3b8; font-size:0.8rem; margin:10px 0 5px;">${mNameFmt}</h5>`;
                      
                      mFlights.forEach(f => {
                          const d = new Date(f.departure_time);
-                         const dayName = d.toLocaleDateString('es-ES', { weekday: 'short' }).toUpperCase(); // LUN
+                         const dayName = d.toLocaleDateString('es-ES', { weekday: 'short' }).toUpperCase();
                          const dayNum = d.getDate();
                          const time = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                          
@@ -575,10 +588,10 @@
 
         } catch (e) {
             console.error("Error cargando vuelos", e);
+            showToast('Error al cargar vuelos.', 'error');
         }
     }
     
-    // Helper colores
     function getAirlineColor(name) {
         if (!name) return '#334155';
         const n = name.toLowerCase();
@@ -596,14 +609,10 @@
         }
     }
 
-    // Inicialización Segura del Dashboard
     function initDashboard() {
         const userStr = localStorage.getItem('user');
         let user = null;
-        if (userStr) {
-            try { user = JSON.parse(userStr); } catch(e) { console.error("JSON User Error", e); }
-        }
-        
+        if (userStr) { try { user = JSON.parse(userStr); } catch(e) {} }
         if (user && user.email) {
             const el = document.getElementById('user-email-display');
             if(el) el.innerText = user.email;
@@ -611,7 +620,6 @@
         loadFlights();
     }
 
-    // Al cargar la página
     document.addEventListener('DOMContentLoaded', () => {
         if (localStorage.getItem('token')) {
             showView('dashboard');
@@ -620,6 +628,6 @@
             showView('register-form');
         }
     });
-  </script>
+</script>
 </body>
 </html>
