@@ -349,34 +349,130 @@
         }
     }
 
-    // Carga de datos simulada
+        // Función para cargar vuelos REALES desde la API
     async function loadFlights() {
-        const mockFlights = [
-            { airline: 'LATAM', number: 'LA600', origin: 'SCL', dest: 'CLO', dep: '2024-04-10T07:45', seat: '12A', status: 1 },
-            { airline: 'Sky', number: 'H2501', origin: 'CLO', dest: 'SCL', dep: '2024-04-12T18:30', seat: '5B', status: 0 }
-        ];
-        document.getElementById('total-flights-count').innerText = mockFlights.length;
-        
-        const listContainer = document.getElementById('upcoming-trips-list');
-        listContainer.innerHTML = '';
-        mockFlights.slice(0, 2).forEach(f => {
-            listContainer.innerHTML += `<div>${f.origin} → ${f.dest} • ${new Date(f.dep).toLocaleDateString()}</div>`;
-        });
+        const token = localStorage.getItem('token');
+        if (!token) return;
 
-        const flightsModalList = document.getElementById('flights-list-container');
-        flightsModalList.innerHTML = '';
-        mockFlights.forEach(f => {
-            const statusBadge = f.status ? `<div class="badge-checked"><span class="check-icon">✓</span> Checked In</div>` : `<button class="btn-checkin-small">Check-in</button>`;
-            flightsModalList.innerHTML += `
-            <div class="flight-row">
-                <div class="airline-logo-small" style="background:${f.airline === 'LATAM' ? '#005587' : '#ff6600'}; color:white;">${f.airline}</div>
-                <div class="flight-details">
-                    <div class="flight-route-bold">${f.origin} → ${f.dest}</div>
-                    <div class="flight-time-small">${new Date(f.dep).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} • ${f.number}</div>
-                </div>
-                <div class="flight-status">${statusBadge}<div class="seat-small">${f.seat||'--'}</div></div>
-            </div>`;
-        });
+        try {
+            // Llamada a la API real que creamos en index.php
+            const res = await fetch('/api/flights', { 
+                headers: { 'Authorization': `Bearer ${token}` } 
+            });
+            
+            if (!res.ok) throw new Error('Error al obtener datos');
+            
+            const result = await res.json();
+            const flights = result.data || []; // Tu API devuelve { success: true, data: [...] }
+
+            // --- ACTUALIZAR HOME (Fichas Superiores) ---
+            
+            // 1. Total Flights Booked
+            document.getElementById('total-flights-count').innerText = flights.length;
+            
+            // 2. Upcoming Trips (Mostrar solo los próximos 2)
+            const listContainer = document.getElementById('upcoming-trips-list');
+            listContainer.innerHTML = '';
+            
+            if (flights.length === 0) {
+                listContainer.innerHTML = '<div style="color:#64748b; font-style:italic;">Sin vuelos próximos</div>';
+            } else {
+                // Ordenar por fecha de salida
+                flights.sort((a, b) => new Date(a.departure_time) - new Date(b.departure_time));
+                
+                flights.slice(0, 2).forEach(f => {
+                    const date = new Date(f.departure_time).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                    listContainer.innerHTML += `<div>${f.origin_airport} → ${f.destination_airport} • ${date}</div>`;
+                });
+            }
+
+            // --- ACTUALIZAR MODAL CALENDARIO (Todos los vuelos) ---
+            const flightsModalList = document.getElementById('flights-list-container');
+            flightsModalList.innerHTML = '';
+            
+            if (flights.length === 0) {
+                flightsModalList.innerHTML = '<p style="text-align:center; color:#cbd5e1; margin-top:20px;">No tienes vuelos registrados aún.</p>';
+            } else {
+                flights.forEach(f => {
+                    const depDate = new Date(f.departure_time);
+                    const timeStr = depDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const dateStr = depDate.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+                    
+                    // Determinar estado visual (si falta menos de 24h o ya pasó)
+                    const now = new Date();
+                    const isPast = depDate < now;
+                    const isChecked = f.check_in_status == 1;
+                    
+                    let statusBadge = '';
+                    if (isChecked) {
+                        statusBadge = `<div class="badge-checked"><span class="check-icon">✓</span> Checked In</div>`;
+                    } else if (isPast) {
+                        statusBadge = `<div style="color:#94a3b8; font-size:0.7rem;">Finalizado</div>`;
+                    } else {
+                        statusBadge = `<button class="btn-checkin-small" onclick="alert('Función Check-in para vuelo ${f.flight_number}')">Check-in</button>`;
+                    }
+
+                    flightsModalList.innerHTML += `
+                    <div class="flight-row">
+                        <div class="airline-logo-small" style="background:${getAirlineColor(f.airline_name)}; color:white;">${f.airline_name ? f.airline_name.substring(0,3).toUpperCase() : 'AIR'}</div>
+                        <div class="flight-details">
+                            <div class="flight-route-bold">${f.origin_airport} <span style="color:#cbd5e1">→</span> ${f.destination_airport}</div>
+                            <div class="flight-time-small">${dateStr} • ${timeStr} ${f.flight_number ? '• '+f.flight_number : ''}</div>
+                            ${f.gate_info ? `<div style="font-size:0.65rem; color:#fbbf24;">Puerta: ${f.gate_info}</div>` : ''}
+                        </div>
+                        <div class="flight-status">
+                            ${statusBadge}
+                            <div class="seat-small">${f.seat_number || '--'}</div>
+                        </div>
+                    </div>`;
+                });
+            }
+
+            // --- ACTUALIZAR MODAL SEMANA (Próximos 7 días) ---
+            const weekList = document.getElementById('week-flights-list');
+            weekList.innerHTML = '';
+            
+            const nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            
+            const upcomingFlights = flights.filter(f => {
+                const d = new Date(f.departure_time);
+                return d >= new Date() && d <= nextWeek;
+            });
+
+            if (upcomingFlights.length === 0) {
+                weekList.innerHTML = '<div style="padding:10px; color:#64748b; text-align:center;">No hay vuelos esta semana</div>';
+            } else {
+                upcomingFlights.forEach(f => {
+                    const d = new Date(f.departure_time);
+                    const dayName = d.toLocaleDateString('es-ES', { weekday: 'short' }).toUpperCase();
+                    const time = d.toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' });
+                    
+                    weekList.innerHTML += `
+                    <div class="flight-row-simple">
+                        <span>${dayName} ${d.getDate()}: ${f.origin_airport} → ${f.destination_airport} <small style="color:#94a3b8">(${time})</small></span>
+                        <span class="highlight-cyan">${f.flight_number || ''}</span>
+                    </div>`;
+                });
+            }
+
+        } catch (e) {
+            console.error("Error cargando vuelos reales:", e);
+            // Fallback visual si falla la API
+            document.getElementById('upcoming-trips-list').innerHTML = '<div style="color:#ef4444;">Error de conexión</div>';
+        }
+    }
+
+    // Helper para colores de aerolíneas
+    function getAirlineColor(name) {
+        if (!name) return '#334155';
+        const n = name.toLowerCase();
+        if (n.includes('latam')) return '#005587';
+        if (n.includes('sky')) return '#ff6600';
+        if (n.includes('jet') || n.includes('smart')) return '#ff0066';
+        if (n.includes('delta')) return '#003366';
+        if (n.includes('iberia')) return '#cc0000';
+        return '#3b82f6'; // Default azul
     }
 
     function logout() {
