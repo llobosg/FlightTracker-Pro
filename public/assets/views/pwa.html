@@ -134,7 +134,6 @@
 
         <!-- Modal 3: New Booking -->
         <div id="modal-booking" class="sub-modal hidden">
-          <!-- ... formulario igual que antes ... -->
           <div class="modal-header"><span>Nuevo Vuelo</span><button class="icon-btn-home" onclick="closeAllModals()">✕</button></div>
           <div class="modal-content-scroll">
               <form id="booking-form" onsubmit="handleNewBooking(event)">
@@ -184,17 +183,14 @@
                   <!-- 🔹 Campos opcionales (siempre editables) -->
                   <div style="display:flex; gap:10px; margin-top:10px;">
                       <div style="flex:1">
-                          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Asiento</label>
-                          <input type="text" name="seat_number" class="input-booking" placeholder="12A">
-                      </div>
-                      <div style="flex:1">
                           <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Puerta</label>
                           <input type="text" name="gate_info" class="input-booking" placeholder="B12">
                       </div>
+                      <div style="flex:1">
+                          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block; margin-top:10px;">Código Reserva</label>
+                          <input type="text" name="reservation_code" class="input-booking" placeholder="ABC123" maxlength="10">
+                      </div>
                   </div>
-                  
-                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block; margin-top:10px;">Código Reserva (PNR)</label>
-                  <input type="text" name="reservation_code" class="input-booking" placeholder="ABC123" maxlength="10">
 
                   <button type="submit" class="btn-add-flight" style="margin-top:20px;">✅ Guardar Reserva</button>
                 </form>
@@ -226,7 +222,7 @@
     let isEditingMode = false;
     let currentFlightId = null;
 
-    // Función para abrir el modal New Booking (ya sea nuevo o editar)
+    // Función para abrir el modal New Booking (CORREGIDA)
     function openBookingModal(flightData = null) {
         const modal = document.getElementById('modal-booking');
         const form = document.getElementById('booking-form');
@@ -248,16 +244,15 @@
             form.elements['origin_airport'].value = flightData.origin_airport || '';
             form.elements['destination_airport'].value = flightData.destination_airport || '';
             
-            // Formatear fechas para input datetime-local (YYYY-MM-DDTHH:mm)
+            // Fechas formateadas (SIN ISOString)
             if (flightData.departure_time) {
-                const depDate = new Date(flightData.departure_time);
-                depDate.setMinutes(depDate.getMinutes() - depDate.getTimezoneOffset());
-                form.elements['departure_time'].value = depDate.toISOString().slice(0, 16);
+                form.elements['departure_time'].value =
+                    formatDateLocal(flightData.departure_time);
             }
+
             if (flightData.arrival_time) {
-                const arrDate = new Date(flightData.arrival_time);
-                arrDate.setMinutes(arrDate.getMinutes() - arrDate.getTimezoneOffset());
-                form.elements['arrival_time'].value = arrDate.toISOString().slice(0, 16);
+                form.elements['arrival_time'].value =
+                    formatDateLocal(flightData.arrival_time);
             }
             
             form.elements['seat_number'].value = flightData.seat_number || '';
@@ -1108,7 +1103,22 @@
         }
     }
 
-    // 📝 Función para rellenar formulario con datos de la API (VERSIÓN FINAL UNIFICADA)
+    function formatDateLocal(dateString) {
+        const date = new Date(dateString);
+
+        // Ajuste de zona horaria (clave)
+        const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+
+        const day = String(localDate.getDate()).padStart(2, '0');
+        const month = String(localDate.getMonth() + 1).padStart(2, '0');
+        const year = String(localDate.getFullYear()).slice(-2);
+        const hours = String(localDate.getHours()).padStart(2, '0');
+        const minutes = String(localDate.getMinutes()).padStart(2, '0');
+
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
+    }
+
+    // 📝 Función para rellenar formulario con datos de la API (CORREGIDA)
     function fillFlightForm(flightData) {
         if (!flightData) return;
         
@@ -1119,26 +1129,23 @@
         if (flightData.origin) form.elements['origin_airport'].value = flightData.origin;
         if (flightData.destination) form.elements['destination_airport'].value = flightData.destination;
         
-        // Formatear para input datetime-local (ISO: YYYY-MM-DDTHH:mm) - El navegador lo mostrará según su locale
-        if (flightData.scheduled_departure) {
-            const depDate = new Date(flightData.scheduled_departure);
-            // Ajustar timezone para mostrar hora local
-            depDate.setMinutes(depDate.getMinutes() - depDate.getTimezoneOffset());
-            // Formato ISO para el VALUE del input (siempre correcto para el backend)
-            form.elements['departure_time'].value = depDate.toISOString().slice(0, 16);
+        // Unificar fuentes de fecha
+        const departure = flightData.departure_time || flightData.scheduled_departure;
+        const arrival = flightData.arrival_time || flightData.scheduled_arrival;
+
+        if (departure) {
+            form.elements['departure_time'].value = formatDateLocal(departure);
         }
-        if (flightData.scheduled_arrival) {
-            const arrDate = new Date(flightData.scheduled_arrival);
-            arrDate.setMinutes(arrDate.getMinutes() - arrDate.getTimezoneOffset());
-            form.elements['arrival_time'].value = arrDate.toISOString().slice(0, 16);
+
+        if (arrival) {
+            form.elements['arrival_time'].value = formatDateLocal(arrival);
         }
         
-        // Texto de estado en UNA sola línea (sin saltos)
+        // Texto de estado en UNA sola línea
         const statusEl = document.getElementById('flight-search-status');
         if (statusEl) {
             statusEl.innerText = `✅ Vuelo encontrado • ${flightData.airline || 'Desconocida'}`;
             statusEl.className = 'success';
-            // Forzar que no salte de línea con CSS inline por seguridad
             statusEl.style.whiteSpace = 'nowrap';
             statusEl.style.overflow = 'hidden';
             statusEl.style.textOverflow = 'ellipsis';
@@ -1197,94 +1204,11 @@
         }
     });
 
-    // Modificar openBookingModal para preparar el formulario según modo
-    function openBookingModal(flightData = null) {
-        const modal = document.getElementById('modal-booking');
-        const form = document.getElementById('booking-form');
-        const title = modal.querySelector('.modal-header span');
-        
-        // Limpiar formulario y estado
-        form.reset();
-        const statusEl = document.getElementById('flight-search-status');
-        if (statusEl) statusEl.innerText = '';
-        
-        if (flightData) {
-            // === MODO EDICIÓN ===
-            isEditingMode = true;
-            currentFlightId = flightData.id;
-            title.innerText = "Editar Vuelo";
-            
-            // Rellenar con datos existentes
-            form.elements['airline_name'].value = flightData.airline_name || '';
-            form.elements['reservation_code'].value = flightData.reservation_code || '';
-            form.elements['flight_number'].value = flightData.flight_number || '';
-            form.elements['origin_airport'].value = flightData.origin_airport || '';
-            form.elements['destination_airport'].value = flightData.destination_airport || '';
-            form.elements['seat_number'].value = flightData.seat_number || '';
-            form.elements['gate_info'].value = flightData.gate_info || '';
-
-            // Rellenar campos datetime-local
-            if (flightData.departure_time) {
-                const depDate = new Date(flightData.departure_time);
-                depDate.setMinutes(depDate.getMinutes() - depDate.getTimezoneOffset());
-                form.elements['departure_time'].value = depDate.toISOString().slice(0, 16);
-            }
-            if (flightData.arrival_time) {
-                const arrDate = new Date(flightData.arrival_time);
-                arrDate.setMinutes(arrDate.getMinutes() - arrDate.getTimezoneOffset());
-                form.elements['arrival_time'].value = arrDate.toISOString().slice(0, 16);
-            }
-            
-            enableManualEdit();
-            
-        } else {
-            // === MODO NUEVO ===
-            isEditingMode = false;
-            currentFlightId = null;
-            title.innerText = "Nuevo Vuelo";
-            
-            // Bloquear campos autocompletados inicialmente
-            const autoFields = ['airline_name', 'origin_airport', 'destination_airport', 'departure_time', 'arrival_time'];
-            autoFields.forEach(fieldName => {
-                const field = form.elements[fieldName];
-                if (field) {
-                    field.readOnly = true;
-                    field.style.background = 'rgba(0,0,0,0.15)';
-                    field.style.cursor = 'not-allowed';
-                    field.style.borderColor = 'rgba(255,255,255,0.2)';
-                }
-            });
-            
-            // Enfocar el campo de número de vuelo para empezar a escribir
-            setTimeout(() => {
-                const flightInput = form.elements['flight_number'];
-                if (flightInput) flightInput.focus();
-            }, 300);
-        }
-        
-        modal.classList.remove('hidden');
-    }
-
     // 🔗 Combinar fecha + hora 24h en formato ISO para enviar al backend
     function combineDateTime(dateValue, timeValue) {
         if (!dateValue || !timeValue) return null;
         // dateValue: YYYY-MM-DD, timeValue: HH:mm
         return `${dateValue}T${timeValue}:00`;
-    }
-
-    function formatDateLocal(dateString) {
-        const date = new Date(dateString);
-
-        // Ajuste de zona horaria (clave)
-        const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-
-        const day = String(localDate.getDate()).padStart(2, '0');
-        const month = String(localDate.getMonth() + 1).padStart(2, '0');
-        const year = String(localDate.getFullYear()).slice(-2);
-        const hours = String(localDate.getHours()).padStart(2, '0');
-        const minutes = String(localDate.getMinutes()).padStart(2, '0');
-
-        return `${day}/${month}/${year} ${hours}:${minutes}`;
     }
 
     // Ejemplo de uso con tus datos
