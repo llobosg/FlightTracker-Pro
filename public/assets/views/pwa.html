@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#3b82f6">
+  <!-- Corregido meta tag deprecated -->
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>FlightTracker Pro</title>
@@ -15,9 +17,11 @@
 </head>
 <body>
   <div class="app-container">
-    <div class="logo">
+    
+    <!-- Logo / Header Inicial -->
+    <div class="logo-header">
       <h1>✈️ FlightTracker Pro</h1>
-      <p style="color: #94a3b8; margin-top: 4px;">Tu agenda de vuelos, siempre contigo</p>
+      <p style="color: #94a3b8; margin-top: 4px; font-size: 0.9rem;">Desarmar toboganes, crosscheck, reportar</p>
     </div>
 
     <!-- Formulario de Registro -->
@@ -54,206 +58,161 @@
       </p>
     </div>
 
-  <div id="dashboard" class="hidden">
+    <!-- DASHBOARD PRINCIPAL -->
+    <div id="dashboard" class="hidden">
   
-    <!-- 1. Barra Superior (Más transparente + Logout) -->
-    <div class="glass-bar top-bar transparent-mode">
-      <!-- Calendario -->
-      <div class="nav-icon" onclick="toggleModal('modal-flights')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-      </div>
-      <!-- Campana -->
-      <div class="nav-icon" onclick="toggleModal('modal-week')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-      </div>
-      <!-- Perfil -->
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-      </div>
-      <!-- Settings (Abre Modal Configuración) -->
-      <div class="nav-icon" onclick="toggleModal('modal-settings')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-      </div>
-      <!-- LOGOUT (Nuevo ícono a la derecha) -->
-      <div class="nav-icon logout-icon" onclick="logout()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-      </div>
-    </div>
-
-    <!-- 2. Contenido Principal (Fichas + Burbuja) -->
-    <div class="main-content">
-      <div class="stats-group">
-        <div class="glass-card stat-card large">
-          <span class="stat-label">Total Flights Booked</span>
-          <span class="stat-value highlight-cyan" id="total-flights-count">0</span>
+      <!-- 1. Barra Superior -->
+      <div class="glass-bar top-bar transparent-mode">
+        <div class="nav-icon" onclick="toggleModal('modal-flights')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></rect><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
         </div>
-        <div class="glass-card stat-card large">
-          <span class="stat-label">Upcoming Trips</span>
-          <div class="trip-list" id="upcoming-trips-list">
-            <div>Cargando...</div>
-          </div>
+        <div class="nav-icon" onclick="toggleModal('modal-week')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        </div>
+        <div class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <div class="nav-icon" onclick="toggleModal('modal-settings')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </div>
+        <div class="nav-icon logout-icon" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
         </div>
       </div>
-      <div class="bubble-container">
-        <button class="bubble-btn" onclick="toggleModal('modal-booking')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-        </button>
-        <span class="bubble-label">New<br>Booking</span>
-      </div>
-    </div>
 
-    <!-- ================= MODALES ================= -->
-
-    <!-- Modal 1: Próximos Vuelos (Calendario) -->
-    <div id="modal-flights" class="sub-modal hidden">
-      <div class="modal-header">
-        <span>Mis Vuelos</span>
-        <button class="icon-btn-home" onclick="closeAllModals()">✕</button>
-      </div>
-      <div class="modal-content-scroll" id="flights-list-container">
-        <!-- Se llena dinámicamente con JS -->
-        <p style="text-align:center; color:#cbd5e1;">Cargando vuelos...</p>
-      </div>
-    </div>
-
-    <!-- Modal 2: Vuelos Semana (Campana) -->
-    <div id="modal-week" class="sub-modal hidden">
-      <div class="modal-header">
-        <span>Esta Semana</span>
-        <button class="icon-btn-home" onclick="closeAllModals()">✕</button>
-      </div>
-      <div class="modal-content-scroll">
-        <div class="week-section">
-          <h4>Próximos 7 días</h4>
-          <div id="week-flights-list">
-              <!-- Dinámico -->
+      <!-- 2. Contenido Principal -->
+      <div class="main-content">
+        <div class="stats-group">
+          <div class="glass-card stat-card large">
+            <span class="stat-label">Total Flights Booked</span>
+            <span class="stat-value highlight-cyan" id="total-flights-count">0</span>
+          </div>
+          <div class="glass-card stat-card large">
+            <span class="stat-label">Upcoming Trips</span>
+            <div class="trip-list" id="upcoming-trips-list">
+              <div>Cargando...</div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Modal 3: New Booking (Formulario Real) -->
-    <div id="modal-booking" class="sub-modal hidden">
-      <div class="modal-header">
-        <span>Nuevo Vuelo</span>
-        <button class="icon-btn-home" onclick="closeAllModals()">✕</button>
-      </div>
-      <div class="modal-content-scroll">
-        <form id="booking-form" onsubmit="handleNewBooking(event)">
-          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Aerolínea</label>
-          <input type="text" name="airline_name" class="input-booking" placeholder="Ej: LATAM, Sky" required>
-          
-          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Código Reserva (PNR)</label>
-          <input type="text" name="reservation_code" class="input-booking" placeholder="Ej: ABC123" maxlength="10" required>
-          
-          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Número de Vuelo</label>
-          <input type="text" name="flight_number" class="input-booking" placeholder="Ej: LA600">
-          
-          <div style="display:flex; gap:10px;">
-              <div style="flex:1">
-                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Origen</label>
-                  <input type="text" name="origin_airport" class="input-booking" placeholder="SCL" maxlength="3" required>
-              </div>
-              <div style="flex:1">
-                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Destino</label>
-                  <input type="text" name="destination_airport" class="input-booking" placeholder="CLO" maxlength="3" required>
-              </div>
-          </div>
-
-          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Salida (Fecha y Hora)</label>
-          <input type="datetime-local" name="departure_time" class="input-booking" required>
-          
-          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Llegada (Fecha y Hora)</label>
-          <input type="datetime-local" name="arrival_time" class="input-booking" required>
-
-          <div style="display:flex; gap:10px;">
-              <div style="flex:1">
-                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Asiento</label>
-                  <input type="text" name="seat_number" class="input-booking" placeholder="12A">
-              </div>
-              <div style="flex:1">
-                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Puerta</label>
-                  <input type="text" name="gate_info" class="input-booking" placeholder="B12">
-              </div>
-          </div>
-
-          <button type="submit" class="btn-add-flight">Guardar Reserva</button>
-        </form>
-      </div>
-    </div>
-
-    <!-- Modal 4: Settings (Configuración) -->
-    <div id="modal-settings" class="sub-modal hidden">
-      <div class="modal-header">
-        <span>Configuración</span>
-        <button class="icon-btn-home" onclick="closeAllModals()">✕</button>
-      </div>
-      <div class="modal-content-scroll">
-        <div class="settings-group">
-          <h4 style="color:#fff; margin-bottom:10px;">Notificaciones</h4>
-          <div class="toggle-row-full">
-            <span>Email Alerts</span>
-            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-          </div>
-          <div class="toggle-row-full">
-            <span>Push Notifications</span>
-            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-          </div>
-          <div class="toggle-row-full">
-            <span>WhatsApp Reminder</span>
-            <label class="switch"><input type="checkbox"><span class="slider"></span></label>
-          </div>
-        </div>
-        <div class="settings-group" style="margin-top:20px;">
-          <h4 style="color:#fff; margin-bottom:10px;">Cuenta</h4>
-          <p style="color:#cbd5e1; font-size:0.9rem;" id="user-email-display">usuario@email.com</p>
-          <button class="btn-logout-small" onclick="logout()">Cerrar Sesión</button>
+        <div class="bubble-container">
+          <button class="bubble-btn" onclick="toggleModal('modal-booking')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+          <span class="bubble-label">New<br>Booking</span>
         </div>
       </div>
-    </div>
 
-  </div>
+      <!-- ================= MODALES (Submodals) ================= -->
 
-      <!-- 4. Vista Modal de Próximos Vuelos (Oculta por defecto) -->
-      <div id="flights-view" class="modal-view hidden">
+      <!-- Modal 1: Próximos Vuelos -->
+      <div id="modal-flights" class="sub-modal hidden">
         <div class="modal-header">
-          <h2>Próximos Vuelos</h2>
-          <button class="close-btn" onclick="hideFlightsView()">✕</button>
+          <span>Mis Vuelos</span>
+          <button class="icon-btn-home" onclick="closeAllModals()">✕</button>
         </div>
-        <div class="flights-list">
-          <!-- Vuelo 1 -->
-          <div class="glass-card flight-card">
-            <div class="flight-header">
-              <div class="airline-logo" style="background:#005587; color:white;">LATAM</div>
-              <div class="flight-info">
-                <div class="flight-number">LA600</div>
-                <div class="flight-route"><strong>Santiago</strong> → Calama</div>
-                <div class="flight-time">07:45 AM</div>
-              </div>
-            </div>
-            <div class="flight-actions">
-              <div class="checkin-badge"><span class="check-icon">✓</span> Checked In</div>
-              <div class="seat-number">12A</div>
-            </div>
-          </div>
-          <!-- Vuelo 2 -->
-          <div class="glass-card flight-card">
-            <div class="flight-header">
-              <div class="airline-logo" style="background:#ff6600; color:white;">Sky</div>
-              <div class="flight-info">
-                <div class="flight-number">H2501</div>
-                <div class="flight-route"><strong>Calama</strong> → Santiago</div>
-                <div class="flight-time">18:30 PM</div>
-              </div>
-            </div>
-            <div class="flight-actions">
-              <button class="btn-checkin">Check-in</button>
-              <div class="seat-number">--</div>
-            </div>
+        <div class="modal-content-scroll" id="flights-list-container">
+          <p style="text-align:center; color:#cbd5e1;">Cargando vuelos...</p>
+        </div>
+      </div>
+
+      <!-- Modal 2: Esta Semana -->
+      <div id="modal-week" class="sub-modal hidden">
+        <div class="modal-header">
+          <span>Esta Semana</span>
+          <button class="icon-btn-home" onclick="closeAllModals()">✕</button>
+        </div>
+        <div class="modal-content-scroll">
+          <div class="week-section">
+            <h4>Próximos 7 días</h4>
+            <div id="week-flights-list"></div>
           </div>
         </div>
       </div>
-  </div>
+
+      <!-- Modal 3: New Booking -->
+      <div id="modal-booking" class="sub-modal hidden">
+        <div class="modal-header">
+          <span>Nuevo Vuelo</span>
+          <button class="icon-btn-home" onclick="closeAllModals()">✕</button>
+        </div>
+        <div class="modal-content-scroll">
+          <form id="booking-form" onsubmit="handleNewBooking(event)">
+            <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Aerolínea</label>
+            <input type="text" name="airline_name" class="input-booking" placeholder="Ej: LATAM" required>
+            
+            <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Código Reserva</label>
+            <input type="text" name="reservation_code" class="input-booking" placeholder="ABC123" maxlength="10" required>
+            
+            <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Número de Vuelo</label>
+            <input type="text" name="flight_number" class="input-booking" placeholder="LA600">
+            
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1">
+                    <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Origen</label>
+                    <input type="text" name="origin_airport" class="input-booking" placeholder="SCL" required>
+                </div>
+                <div style="flex:1">
+                    <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Destino</label>
+                    <input type="text" name="destination_airport" class="input-booking" placeholder="CLO" required>
+                </div>
+            </div>
+
+            <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Salida</label>
+            <input type="datetime-local" name="departure_time" class="input-booking" required>
+            
+            <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Llegada</label>
+            <input type="datetime-local" name="arrival_time" class="input-booking" required>
+
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1">
+                    <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Asiento</label>
+                    <input type="text" name="seat_number" class="input-booking" placeholder="12A">
+                </div>
+                <div style="flex:1">
+                    <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Puerta</label>
+                    <input type="text" name="gate_info" class="input-booking" placeholder="B12">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-add-flight">Guardar Reserva</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Modal 4: Settings -->
+      <div id="modal-settings" class="sub-modal hidden">
+        <div class="modal-header">
+          <span>Configuración</span>
+          <button class="icon-btn-home" onclick="closeAllModals()"></button>
+        </div>
+        <div class="modal-content-scroll">
+          <div class="settings-group">
+            <h4 style="color:#fff; margin-bottom:10px;">Notificaciones</h4>
+            <div class="toggle-row-full">
+              <span>Email Alerts</span>
+              <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+            </div>
+            <div class="toggle-row-full">
+              <span>Push Notifications</span>
+              <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+            </div>
+            <div class="toggle-row-full">
+              <span>WhatsApp Reminder</span>
+              <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+            </div>
+          </div>
+          <div class="settings-group" style="margin-top:20px;">
+            <h4 style="color:#fff; margin-bottom:10px;">Cuenta</h4>
+            <p style="color:#cbd5e1; font-size:0.9rem;" id="user-email-display">usuario@email.com</p>
+            <button class="btn-logout-small" onclick="logout()">Cerrar Sesión</button>
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- Fin Dashboard -->
+
+  </div> <!-- Fin App Container -->
+
   <script>
     // Registrar Service Worker
     if ('serviceWorker' in navigator) {
@@ -262,137 +221,104 @@
         .catch(err => console.log('SW error:', err));
     }
 
-    // Estado de la app
-    let currentUser = null;
-    // Asumiendo que tu router en index.php usa '/api/register'
     const API = window.location.origin + '/api'; 
 
-    // Navegación entre vistas
+    // Navegación simple
     function showView(viewId) {
       ['register-form', 'login-form', 'verify-form', 'dashboard'].forEach(id => {
-        document.getElementById(id).classList.add('hidden');
+        const el = document.getElementById(id);
+        if(el) el.classList.add('hidden');
       });
-      document.getElementById(viewId).classList.remove('hidden');
+      const target = document.getElementById(viewId);
+      if(target) target.classList.remove('hidden');
     }
 
     function showLogin() { showView('login-form'); }
     
-    // Registro
     async function register() {
       const name = document.getElementById('reg-name').value;
       const email = document.getElementById('reg-email').value;
       const password = document.getElementById('reg-pass').value;
-      
       try {
         const res = await fetch(`${API}/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password })
         });
         const data = await res.json();
-        
         if (res.ok) {
           document.getElementById('verify-email').textContent = email;
           currentUser = { email, tempId: data.user_id };
           showView('verify-form');
-        } else {
-          alert(data.message || 'Error en registro');
-        }
-      } catch (e) {
-        alert('Error de conexión. Verifica tu internet.');
-      }
+        } else { alert(data.message || 'Error en registro'); }
+      } catch (e) { alert('Error de conexión.'); }
     }
 
-    // Verificación
     async function verifyCode() {
       const code = document.getElementById('verify-code').value;
-      
       try {
         const res = await fetch(`${API}/verify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: currentUser.email, code })
         });
         const data = await res.json();
-        
         if (res.ok) {
-          alert('✅ Cuenta verificada. Ahora puedes iniciar sesión.');
+          alert('✅ Cuenta verificada.');
           showView('login-form');
-        } else {
-          alert(data.message || 'Código inválido o expirado');
-        }
-      } catch (e) {
-        alert('Error de conexión');
-      }
+        } else { alert(data.message || 'Código inválido'); }
+      } catch (e) { alert('Error de conexión'); }
     }
 
-    // Login
     async function login() {
       const email = document.getElementById('login-email').value;
       const password = document.getElementById('login-pass').value;
-      
       try {
         const res = await fetch(`${API}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });
         const data = await res.json();
-        
         if (res.ok) {
+          // Guardamos token Y user (asegurando que sea un string válido)
           localStorage.setItem('token', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
+          if (data.user) {
+             localStorage.setItem('user', JSON.stringify(data.user));
+          } else {
+             // Fallback si el backend no envía user
+             localStorage.setItem('user', JSON.stringify({ email: email }));
+          }
           showView('dashboard');
-        } else {
-          alert(data.message || 'Credenciales inválidas');
-        }
-      } catch (e) {
-        alert('Error de conexión');
+          initDashboard(); // Inicializar dashboard inmediatamente
+        } else { alert(data.message || 'Credenciales inválidas'); }
+      } catch (e) { alert('Error de conexión'); }
+    }
+
+    function resendCode() { alert('📧 Código reenviado (simulación)'); }
+
+    // Funciones de Modales
+    function toggleModal(modalId) {
+      console.log("Abriendo modal:", modalId);
+      closeAllModals();
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.remove('hidden');
+      } else {
+        console.error("Modal NO encontrado:", modalId);
       }
     }
 
-    function resendCode() {
-      alert('📧 Código reenviado (simulación)');
+    function closeAllModals() {
+      document.querySelectorAll('.sub-modal').forEach(m => m.classList.add('hidden'));
     }
 
-    // Auto-login si hay token
-    if (localStorage.getItem('token')) {
-      showView('dashboard');
-    }
-
-    // Funciones para mostrar/ocultar la vista de vuelos
-    function showFlightsView() {
-        document.getElementById('flights-view').classList.remove('hidden');
-    }
-
-    function hideFlightsView() {
-        document.getElementById('flights-view').classList.add('hidden');
-    }
-
-    // Cierra modales si se hace click fuera (opcional, mejor UX)
-    document.addEventListener('click', function(event) {
-        const isClickInsideBar = event.target.closest('.top-bar');
-        const isClickInsideModal = event.target.closest('.sub-modal');
-        
-        if (!isClickInsideBar && !isClickInsideModal) {
-            closeAllModals();
-        }
-    });
-
-    // Función para manejar el envío del formulario New Booking
+    // Lógica New Booking
     async function handleNewBooking(event) {
         event.preventDefault();
-        
         const form = event.target;
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
-        
-        // Obtener token del localStorage
         const token = localStorage.getItem('token');
-        if (!token) {
-            alert('Debes iniciar sesión primero');
-            return;
-        }
+        
+        if (!token) { alert('Sesión expirada. Por favor inicia sesión.'); location.reload(); return; }
 
         const btn = form.querySelector('button[type="submit"]');
         const originalText = btn.innerText;
@@ -402,20 +328,15 @@
         try {
             const response = await fetch('/api/flights', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(data)
             });
-
             const result = await response.json();
-
             if (response.ok) {
                 alert('✅ Vuelo agregado correctamente');
                 closeAllModals();
                 form.reset();
-                loadFlights(); // Recargar lista
+                loadFlights();
             } else {
                 alert('Error: ' + (result.message || 'No se pudo guardar'));
             }
@@ -428,125 +349,68 @@
         }
     }
 
-    // Función para cargar vuelos (Simulada por ahora, luego conectamos GET)
+    // Carga de datos simulada
     async function loadFlights() {
-        const token = localStorage.getItem('token');
-        if (!token) return;
+        const mockFlights = [
+            { airline: 'LATAM', number: 'LA600', origin: 'SCL', dest: 'CLO', dep: '2024-04-10T07:45', seat: '12A', status: 1 },
+            { airline: 'Sky', number: 'H2501', origin: 'CLO', dest: 'SCL', dep: '2024-04-12T18:30', seat: '5B', status: 0 }
+        ];
+        document.getElementById('total-flights-count').innerText = mockFlights.length;
+        
+        const listContainer = document.getElementById('upcoming-trips-list');
+        listContainer.innerHTML = '';
+        mockFlights.slice(0, 2).forEach(f => {
+            listContainer.innerHTML += `<div>${f.origin} → ${f.dest} • ${new Date(f.dep).toLocaleDateString()}</div>`;
+        });
 
-        try {
-            // Aquí llamaremos a tu API real cuando la creemos
-            // const res = await fetch('/api/flights', { headers: { 'Authorization': `Bearer ${token}` }});
-            // const flights = await res.json();
-            
-            // SIMULACIÓN PARA PRUEBAS VISUALES:
-            const mockFlights = [
-                { airline: 'LATAM', code: 'ABC123', number: 'LA600', origin: 'SCL', dest: 'CLO', dep: '2024-04-10T07:45', seat: '12A', status: 1 },
-                { airline: 'Sky', code: 'XYZ789', number: 'H2501', origin: 'CLO', dest: 'SCL', dep: '2024-04-12T18:30', seat: '5B', status: 0 }
-            ];
-
-            // Actualizar contador
-            document.getElementById('total-flights-count').innerText = mockFlights.length;
-            
-            // Actualizar lista próxima
-            const listContainer = document.getElementById('upcoming-trips-list');
-            listContainer.innerHTML = '';
-            mockFlights.slice(0, 2).forEach(f => {
-                listContainer.innerHTML += `<div>${f.origin} → ${f.dest} • ${new Date(f.dep).toLocaleDateString()}</div>`;
-            });
-
-            // Actualizar Modal Vuelos
-            const flightsModalList = document.getElementById('flights-list-container');
-            flightsModalList.innerHTML = '';
-            mockFlights.forEach(f => {
-                const statusBadge = f.status ? `<div class="badge-checked"><span class="check-icon">✓</span> Checked In</div>` : `<button class="btn-checkin-small">Check-in</button>`;
-                
-                flightsModalList.innerHTML += `
-                <div class="flight-row">
-                    <div class="airline-logo-small" style="background:${f.airline === 'LATAM' ? '#005587' : '#ff6600'}; color:white;">${f.airline}</div>
-                    <div class="flight-details">
-                        <div class="flight-route-bold">${f.origin} <span style="color:#cbd5e1">→</span> ${f.dest}</div>
-                        <div class="flight-time-small">${new Date(f.dep).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • ${f.number}</div>
-                    </div>
-                    <div class="flight-status">
-                        ${statusBadge}
-                        <div class="seat-small">${f.seat || '--'}</div>
-                    </div>
-                </div>`;
-            });
-
-        } catch (e) {
-            console.error("Error cargando vuelos", e);
-        }
+        const flightsModalList = document.getElementById('flights-list-container');
+        flightsModalList.innerHTML = '';
+        mockFlights.forEach(f => {
+            const statusBadge = f.status ? `<div class="badge-checked"><span class="check-icon">✓</span> Checked In</div>` : `<button class="btn-checkin-small">Check-in</button>`;
+            flightsModalList.innerHTML += `
+            <div class="flight-row">
+                <div class="airline-logo-small" style="background:${f.airline === 'LATAM' ? '#005587' : '#ff6600'}; color:white;">${f.airline}</div>
+                <div class="flight-details">
+                    <div class="flight-route-bold">${f.origin} → ${f.dest}</div>
+                    <div class="flight-time-small">${new Date(f.dep).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} • ${f.number}</div>
+                </div>
+                <div class="flight-status">${statusBadge}<div class="seat-small">${f.seat||'--'}</div></div>
+            </div>`;
+        });
     }
 
-    // Función Logout
     function logout() {
-        if(confirm('¿Seguro que deseas cerrar sesión?')) {
+        if(confirm('¿Cerrar sesión?')) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            location.reload(); // Recarga para volver al login
+            location.reload();
         }
     }
 
-    // Función segura para obtener datos del usuario
-    function getUserData() {
+    // Inicialización Segura del Dashboard
+    function initDashboard() {
         const userStr = localStorage.getItem('user');
-        if (!userStr) return null;
-        try {
-            return JSON.parse(userStr);
-        } catch (e) {
-            console.error("Error parseando usuario:", e);
-            return null;
+        let user = null;
+        if (userStr) {
+            try { user = JSON.parse(userStr); } catch(e) { console.error("JSON User Error", e); }
         }
+        
+        if (user && user.email) {
+            const el = document.getElementById('user-email-display');
+            if(el) el.innerText = user.email;
+        }
+        loadFlights();
     }
 
-    // Al cargar el dashboard
+    // Al cargar la página
     document.addEventListener('DOMContentLoaded', () => {
-        const token = localStorage.getItem('token');
-        
-        // Si NO hay token, mostrar login (y ocultar dashboard si existe)
-        if (!token) {
-            document.getElementById('register-form')?.classList.remove('hidden');
-            document.getElementById('login-form')?.classList.remove('hidden');
-            document.getElementById('dashboard')?.classList.add('hidden');
-            return; 
-        }
-
-        // SI hay token, mostrar dashboard
-        document.getElementById('register-form')?.classList.add('hidden');
-        document.getElementById('login-form')?.classList.add('hidden');
-        const dashboard = document.getElementById('dashboard');
-        if (dashboard) {
-            dashboard.classList.remove('hidden');
-            
-            // Cargar datos seguros
-            const user = getUserData();
-            if (user && user.email) {
-                const emailDisplay = document.getElementById('user-email-display');
-                if (emailDisplay) emailDisplay.innerText = user.email;
-            }
-            
-            loadFlights();
+        if (localStorage.getItem('token')) {
+            showView('dashboard');
+            initDashboard();
+        } else {
+            showView('register-form');
         }
     });
-
-    // Asegurar que toggleModal exista y funcione
-    function toggleModal(modalId) {
-        console.log("Intentando abrir modal:", modalId); // Debug
-        closeAllModals();
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.remove('hidden');
-        } else {
-            console.error("Modal no encontrado:", modalId);
-        }
-    }
-
-    function closeAllModals() {
-        const modals = document.querySelectorAll('.sub-modal');
-        modals.forEach(m => m.classList.add('hidden'));
-    }
   </script>
-
 </body>
 </html>
