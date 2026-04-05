@@ -497,6 +497,28 @@ input:checked + .slider:before { transform: translateX(12px); }
     width: 100% !important;
     display: block !important;
 }
+/* Inputs de fecha y hora separados */
+.input-booking[type="date"],
+.input-booking[type="time"] {
+    color: #fff;
+    background: rgba(0,0,0,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 0.9rem;
+}
+
+.input-booking[type="time"] {
+    /* Asegurar que el time input muestre formato 24h cuando sea posible */
+    direction: ltr;
+}
+
+/* Cuando están editables */
+.input-booking[type="date"]:not([readonly]),
+.input-booking[type="time"]:not([readonly]) {
+    background: rgba(0,0,0,0.3);
+    cursor: text;
+}
 
 /* Colores específicos para estados */
 #flight-search-status.searching { color: #94a3b8 !important; }
