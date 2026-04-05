@@ -220,38 +220,6 @@
 
   <script>
     // ==========================================
-    // 🗄️ FUNCIONES DE CACHÉ (Definidas PRIMERO)
-    // ==========================================
-    const FLIGHT_CACHE_KEY = 'flight_tracker_api_cache';
-    const CACHE_EXPIRY_HOURS = 24;
-
-    function getCachedFlight(flightNumber) {
-        try {
-            const cache = JSON.parse(localStorage.getItem(FLIGHT_CACHE_KEY) || '{}');
-            const entry = cache[flightNumber.toUpperCase()];
-            if (!entry) return null;
-            const now = Date.now();
-            const expiry = entry.timestamp + (CACHE_EXPIRY_HOURS * 60 * 60 * 1000);
-            if (now < expiry) {
-                console.log(`📦 Caché hit para ${flightNumber}`);
-                return entry.data;
-            } else {
-                delete cache[flightNumber.toUpperCase()];
-                localStorage.setItem(FLIGHT_CACHE_KEY, JSON.stringify(cache));
-                return null;
-            }
-        } catch (e) { return null; }
-    }
-
-    function setCachedFlight(flightNumber, flightData) {
-        try {
-            const cache = JSON.parse(localStorage.getItem(FLIGHT_CACHE_KEY) || '{}');
-            cache[flightNumber.toUpperCase()] = { data: flightData, timestamp: Date.now() };
-            localStorage.setItem(FLIGHT_CACHE_KEY, JSON.stringify(cache));
-        } catch (e) { console.error('Cache save error:', e); }
-    }
-
-    // ==========================================
     // 📝 FUNCIONES DE FORMULARIO
     // ==========================================
     let isEditingMode = false;
