@@ -132,6 +132,76 @@ elseif ($uri === '/api/flights' && $method === 'POST') {
     exit();
 }
 
+// D2. ACTUALIZAR VUELO EXISTENTE (PUT)
+elseif ($uri === '/api/flights' && $method === 'PUT') {
+    $headers = getallheaders();
+    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    $token = str_replace('Bearer ', '', $authHeader);
+    $userId = validateToken($token);
+
+    if (!$userId) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'No autorizado']);
+        exit();
+    }
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    $flightId = $input['id'] ?? null;
+
+    if (!$flightId) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'ID de vuelo faltante']);
+        exit();
+    }
+
+    try {
+        $db = Database::getInstance();
+        
+        // Verificar que el vuelo pertenece al usuario
+        $checkStmt = $db->prepare("SELECT id FROM flights WHERE id = ? AND user_id = ?");
+        $checkStmt->execute([$flightId, $userId]);
+        if (!$checkStmt->fetch()) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Vuelo no encontrado o no pertenece a usted']);
+            exit();
+        }
+
+        // Actualizar
+        $stmt = $db->prepare("
+            UPDATE flights SET 
+                airline_name = ?, 
+                flight_number = ?, 
+                origin_airport = ?, 
+                destination_airport = ?, 
+                departure_time = ?, 
+                arrival_time = ?, 
+                seat_number = ?, 
+                gate_info = ?,
+                reservation_code = ?
+            WHERE id = ?
+        ");
+        
+        $stmt->execute([
+            $input['airline_name'] ?? null,
+            $input['flight_number'] ?? null,
+            $input['origin_airport'] ?? null,
+            $input['destination_airport'] ?? null,
+            $input['departure_time'],
+            $input['arrival_time'],
+            $input['seat_number'] ?? null,
+            $input['gate_info'] ?? null,
+            $input['reservation_code'],
+            $flightId
+        ]);
+
+        echo json_encode(['success' => true, 'message' => 'Vuelo actualizado correctamente']);
+    } catch (PDOException $e) {
+        error_log("DB Update Error: " . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'Error al actualizar']);
+    }
+    exit();
+}
+
 // E. Obtener Vuelos (GET)
 elseif ($uri === '/api/flights' && $method === 'GET') {
     $headers = getallheaders();
@@ -373,6 +443,42 @@ elseif ($uri === '/api/get-today-alerts' && $method === 'GET') {
         echo json_encode(['success' => true, 'alerts' => $alerts]);
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'message' => 'Error']);
+    }
+    exit();
+}
+
+// J. BUSCAR VUELO POR NÚMERO (Para autocompletado frontend)
+elseif ($uri === '/api/search-flight' && $method === 'GET') {
+    $flightNum = $_GET['number'] ?? '';
+    $apiKey = getenv('AVIATION_STACK_KEY');
+    
+    if (!$flightNum || !$apiKey) {
+        echo json_encode(['success' => false]);
+        exit();
+    }
+
+    $url = "https://api.aviationstack.com/v1/flights?access_key={$apiKey}&flight_iata={$flightNum}";
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    $data = json_decode($response, true);
+    
+    if (isset($data['data']) && count($data['data']) > 0) {
+        $f = $data['data'][0];
+        echo json_encode([
+            'success' => true,
+            'flight' => [
+                'origin' => $f['departure']['iata'],
+                'destination' => $f['arrival']['iata'],
+                'airline' => $f['airline']['name'],
+                'scheduled_departure' => $f['departure']['scheduled']
+            ]
+        ]);
+    } else {
+        echo json_encode(['success' => false]);
     }
     exit();
 }

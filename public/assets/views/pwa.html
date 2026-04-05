@@ -219,6 +219,162 @@
   </div> <!-- Fin App Container -->
 
   <script>
+    let isEditingMode = false;
+    let currentFlightId = null;
+
+    // Función para abrir el modal New Booking (ya sea nuevo o editar)
+    function openBookingModal(flightData = null) {
+        const modal = document.getElementById('modal-booking');
+        const form = document.getElementById('booking-form');
+        const title = modal.querySelector('.modal-header span');
+        
+        // Limpiar formulario
+        form.reset();
+        
+        if (flightData) {
+            // MODO EDICIÓN
+            isEditingMode = true;
+            currentFlightId = flightData.id;
+            title.innerText = "Editar Vuelo";
+            
+            // Rellenar campos
+            form.elements['airline_name'].value = flightData.airline_name || '';
+            form.elements['reservation_code'].value = flightData.reservation_code || '';
+            form.elements['flight_number'].value = flightData.flight_number || '';
+            form.elements['origin_airport'].value = flightData.origin_airport || '';
+            form.elements['destination_airport'].value = flightData.destination_airport || '';
+            
+            // Formatear fechas para input datetime-local (YYYY-MM-DDTHH:mm)
+            if (flightData.departure_time) {
+                const depDate = new Date(flightData.departure_time);
+                depDate.setMinutes(depDate.getMinutes() - depDate.getTimezoneOffset());
+                form.elements['departure_time'].value = depDate.toISOString().slice(0, 16);
+            }
+            if (flightData.arrival_time) {
+                const arrDate = new Date(flightData.arrival_time);
+                arrDate.setMinutes(arrDate.getMinutes() - arrDate.getTimezoneOffset());
+                form.elements['arrival_time'].value = arrDate.toISOString().slice(0, 16);
+            }
+            
+            form.elements['seat_number'].value = flightData.seat_number || '';
+            form.elements['gate_info'].value = flightData.gate_info || '';
+            
+        } else {
+            // MODO NUEVO
+            isEditingMode = false;
+            currentFlightId = null;
+            title.innerText = "Nuevo Vuelo";
+        }
+        
+        modal.classList.remove('hidden');
+    }
+
+    // Lógica New Booking con Validaciones (Soporta Crear y Editar)
+    async function handleNewBooking(event) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Normalizar aeropuertos
+        data.origin_airport = data.origin_airport.toUpperCase();
+        data.destination_airport = data.destination_airport.toUpperCase();
+
+        // Validación de Ruta (SCL <-> CJC)
+        const validRoutes = ['SCL-CJC', 'CJC-SCL'];
+        if (!validRoutes.includes(`${data.origin_airport}-${data.destination_airport}`)) {
+            showToast('Solo rutas SCL ↔ CJC permitidas.', 'warning');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) { showToast('Sesión expirada.', 'error'); location.reload(); return; }
+
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn.innerText;
+        btn.innerText = 'Validando...';
+        btn.disabled = true;
+
+        try {
+            // 1. Obtener vuelos actuales solo si es modo CREACIÓN (para validar duplicados/retorno)
+            let existingFlights = [];
+            let depTime = null;
+            
+            if (!isEditingMode) {
+                const resCheck = await fetch('/api/flights', { headers: { 'Authorization': `Bearer ${token}` }});
+                const resultCheck = await resCheck.json();
+                existingFlights = resultCheck.data || [];
+                depTime = new Date(data.departure_time);
+
+                // Validar Duplicados
+                const isDuplicate = existingFlights.some(f => 
+                    f.origin_airport === data.origin_airport &&
+                    f.destination_airport === data.destination_airport &&
+                    Math.abs(new Date(f.departure_time) - depTime) < (60 * 1000) // Diferencia < 1 min
+                );
+
+                if (isDuplicate && !confirm('️ Ya existe un vuelo similar con esta hora. ¿Agregar igual?')) {
+                    btn.innerText = originalText; btn.disabled = false; return;
+                }
+
+                // Validar Vuelo de Retorno
+                const startOfWeek = new Date(depTime);
+                startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1); // Lunes
+                startOfWeek.setHours(0,0,0,0);
+                
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(endOfWeek.getDate() + 6); // Domingo
+                endOfWeek.setHours(23,59,59,999);
+
+                const hasReturn = existingFlights.some(f => {
+                    const fDate = new Date(f.departure_time);
+                    return f.origin_airport === data.destination_airport &&
+                           f.destination_airport === data.origin_airport &&
+                           fDate >= startOfWeek && fDate <= endOfWeek;
+                });
+
+                if (!hasReturn && !confirm(`ℹ️ No hay vuelo de RETORNO (${data.destination_airport} → ${data.origin_airport}) registrado para esta semana.\n¿Deseas continuar guardando solo el ida?`)) {
+                    btn.innerText = originalText; btn.disabled = false; return;
+                }
+            }
+
+            // 2. Preparar solicitud (POST o PUT)
+            btn.innerText = isEditingMode ? 'Actualizando...' : 'Guardando...';
+            const url = '/api/flights';
+            const method = isEditingMode ? 'PUT' : 'POST';
+            
+            if (isEditingMode) data.id = currentFlightId;
+
+            // 3. Enviar al servidor
+            const response = await fetch(url, {
+                method: method,
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showToast(isEditingMode ? '✅ Vuelo actualizado correctamente' : '✅ Vuelo agregado correctamente', 'success');
+                closeAllModals();
+                form.reset();
+                loadFlights();
+            } else {
+                showToast('Error: ' + (result.message || 'No se pudo guardar'), 'error');
+            }
+
+        } catch (error) {
+            console.error(error);
+            showToast('Error de conexión al guardar.', 'error');
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+
     // --- SISTEMA DE NOTIFICACIONES TOAST ---
     function showToast(message, type = 'success') {
         // Crear elemento toast si no existe
@@ -369,112 +525,73 @@
         document.querySelectorAll('.sub-modal').forEach(m => m.classList.add('hidden'));
     }
 
-    // Autocompletado Origen/Destino
+        // Inicialización de Eventos y Listeners
     document.addEventListener('DOMContentLoaded', () => {
+        
+        // --- A. Autocompletado Origen/Destino (SCL <-> CJC) ---
         const originInput = document.querySelector('input[name="origin_airport"]');
         const destInput = document.querySelector('input[name="destination_airport"]');
+        
         if (originInput && destInput) {
             originInput.addEventListener('change', function() {
                 const val = this.value.toUpperCase();
-                if (val === 'SCL') destInput.value = 'CLO';
-                if (val === 'CLO') destInput.value = 'SCL';
+                if (val === 'SCL') destInput.value = 'CJC';
+                if (val === 'CJC') destInput.value = 'SCL';
             });
+            
             destInput.addEventListener('change', function() {
                 const val = this.value.toUpperCase();
-                if (val === 'SCL') originInput.value = 'CLO';
-                if (val === 'CLO') originInput.value = 'SCL';
+                if (val === 'SCL') originInput.value = 'CJC';
+                if (val === 'CJC') originInput.value = 'SCL';
             });
+
+            // Forzar mayúsculas al escribir
             [originInput, destInput].forEach(input => {
                 input.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
             });
         }
+
+        // --- B. Autocompletado Inteligente desde API (Número de Vuelo) ---
+        const flightNumberInput = document.querySelector('input[name="flight_number"]');
+        let debounceTimer;
+
+        if (flightNumberInput) {
+            flightNumberInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                const val = this.value.trim().toUpperCase();
+                
+                // Solo buscar si tiene al menos 2 caracteres y NO estamos editando (para no sobrescribir datos manuales)
+                if (val.length >= 2 && !isEditingMode) {
+                    debounceTimer = setTimeout(async () => {
+                        try {
+                            // Nota: Esto requiere que tengas creado el endpoint /api/search-flight en tu backend
+                            // Si aún no lo tienes, este bloque no hará nada visible, pero está listo.
+                            const res = await fetch(`/api/search-flight?number=${val}`);
+                            
+                            if (!res.ok) throw new Error('API no disponible');
+                            
+                            const data = await res.json();
+                            
+                            if (data.success && data.flight) {
+                                // Rellenar campos automáticamente
+                                if (data.flight.origin) originInput.value = data.flight.origin;
+                                if (data.flight.destination) destInput.value = data.flight.destination;
+                                if (data.flight.airline) document.querySelector('input[name="airline_name"]').value = data.flight.airline;
+                                
+                                // Si la API devuelve horarios estimados, podrías rellenarlos también:
+                                // if (data.flight.scheduled_departure) { ... }
+                                
+                                showToast(' Datos del vuelo encontrados', 'success');
+                            }
+                        } catch(e) {
+                            // Silencioso: Si la API falla o no existe el endpoint, el usuario llena manual
+                            console.log("Autocompletado no disponible o vuelo no encontrado en API externa.");
+                        }
+                    }, 800); // Esperar 800ms después de dejar de escribir
+                }
+            });
+        }
     });
-
-    // Lógica New Booking con Validaciones
-    async function handleNewBooking(event) {
-        event.preventDefault();
-        const form = event.target;
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-        data.origin_airport = data.origin_airport.toUpperCase();
-        data.destination_airport = data.destination_airport.toUpperCase();
-
-        const validRoutes = ['SCL-CLO', 'CLO-SCL'];
-        if (!validRoutes.includes(`${data.origin_airport}-${data.destination_airport}`)) {
-            showToast('Solo rutas SCL ↔ CLO permitidas.', 'warning');
-            return;
-        }
-
-        const token = localStorage.getItem('token');
-        if (!token) { showToast('Sesión expirada.', 'error'); location.reload(); return; }
-
-        const btn = form.querySelector('button[type="submit"]');
-        const originalText = btn.innerText;
-        btn.innerText = 'Validando...';
-        btn.disabled = true;
-
-        try {
-            // Obtener vuelos actuales
-            const resCheck = await fetch('/api/flights', { headers: { 'Authorization': `Bearer ${token}` }});
-            const resultCheck = await resCheck.json();
-            const existingFlights = resultCheck.data || [];
-            const depTime = new Date(data.departure_time);
-
-            // Validar Duplicados
-            const isDuplicate = existingFlights.some(f => 
-                f.origin_airport === data.origin_airport &&
-                f.destination_airport === data.destination_airport &&
-                Math.abs(new Date(f.departure_time) - depTime) < (60 * 1000)
-            );
-
-            if (isDuplicate && !confirm('⚠️ Ya existe un vuelo similar. ¿Agregar igual?')) {
-                btn.innerText = originalText; btn.disabled = false; return;
-            }
-
-            // Validar Retorno
-            const startOfWeek = new Date(depTime);
-            startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1); 
-            startOfWeek.setHours(0,0,0,0);
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(endOfWeek.getDate() + 6); 
-            endOfWeek.setHours(23,59,59,999);
-
-            const hasReturn = existingFlights.some(f => {
-                const fDate = new Date(f.departure_time);
-                return f.origin_airport === data.destination_airport &&
-                       f.destination_airport === data.origin_airport &&
-                       fDate >= startOfWeek && fDate <= endOfWeek;
-            });
-
-            if (!hasReturn && !confirm(`ℹ️ No hay vuelo de retorno (${data.destination_airport}→${data.origin_airport}) esta semana. ¿Continuar?`)) {
-                btn.innerText = originalText; btn.disabled = false; return;
-            }
-
-            // Guardar
-            btn.innerText = 'Guardando...';
-            const response = await fetch('/api/flights', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify(data)
-            });
-            const result = await response.json();
-            
-            if (response.ok) {
-                showToast('✅ Vuelo agregado correctamente', 'success');
-                closeAllModals();
-                form.reset();
-                loadFlights();
-            } else {
-                showToast('Error: ' + (result.message || 'No se pudo guardar'), 'error');
-            }
-        } catch (error) {
-            console.error(error);
-            showToast('Error de conexión.', 'error');
-        } finally {
-            btn.innerText = originalText;
-            btn.disabled = false;
-        }
-    }
 
     // Carga de Vuelos
     async function loadFlights() {
@@ -578,7 +695,7 @@
                         }
 
                         htmlGroup += `
-                        <div class="flight-row">
+                        <div class="flight-row" onclick='openBookingModal(${JSON.stringify(f).replace(/'/g, "&#39;")})' style="cursor:pointer;">
                             <div class="airline-logo-small" style="background:${getAirlineColor(f.airline_name)}">${f.airline_name ? f.airline_name.substring(0,3).toUpperCase() : 'FLT'}</div>
                             <div class="flight-details">
                                 <div class="flight-route-bold">${f.origin_airport} → ${f.destination_airport} ${delayBadge}</div>
@@ -632,7 +749,7 @@
                          const time = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                          
                          weekContainer.innerHTML += `
-                         <div class="flight-row-simple" style="flex-direction:column; align-items:flex-start; gap:2px; padding:8px 10px;">
+                         <div class="flight-row-simple" onclick='openBookingModal(${JSON.stringify(f).replace(/'/g, "&#39;")})' style="cursor:pointer; flex-direction:column; align-items:flex-start; gap:2px; padding:8px 10px;">
                              <div style="display:flex; justify-content:space-between; width:100%;">
                                  <span style="font-weight:bold; color:#fff;">${f.origin_airport} → ${f.destination_airport}</span>
                                  <span style="font-size:0.75rem; color:#22d3ee;">${f.flight_number||''}</span>
