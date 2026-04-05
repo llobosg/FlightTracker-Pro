@@ -145,7 +145,7 @@ body {
     width: 90%; 
     max-width: 388px; /* 420px container - 32px márgenes aprox */
     
-    max-height: 78vh;
+    max-height: 85vh;
     border-radius: 20px;
     z-index: 200;
     display: flex;
@@ -176,7 +176,7 @@ body {
 .modal-content-scroll { 
     padding: 15px; 
     overflow-y: auto; 
-    max-height: 65vh; /* Aumentado de 60vh a 65vh */
+    max-height: 85vh; /* Aumentado de 60vh a 65vh */
     /* Agregamos un padding inferior extra para que el último elemento no quede pegado al borde */
     padding-bottom: 30px; 
 }
