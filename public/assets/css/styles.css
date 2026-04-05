@@ -78,6 +78,7 @@ body {
    TOP BAR & MAIN CONTENT
    ========================================= */
 .top-bar {
+    margin-top: 10px; /* Separación del logo */
     position: sticky;
     top: 16px;
     margin: 0 16px; 
@@ -97,10 +98,19 @@ body {
 .logout-icon svg { stroke: #ef4444 !important; }
 
 .main-content {
-    display: flex;
-    justify-content: space-between;
-    padding: 20px 16px;
+     display: flex;
+    flex-direction: column; /* Apilados verticalmente */
+    padding: 15px 16px;
     gap: 15px;
+    align-items: stretch;
+}
+/* Contenedor Principal Reordenado */
+.main-content-reordered {
+    display: flex;
+    flex-direction: column; /* Apilados verticalmente */
+    padding: 15px 16px;
+    gap: 15px;
+    align-items: stretch;
 }
 .stats-group { flex: 7; display: flex; flex-direction: column; gap: 15px; }
 .stat-card.large { 
@@ -291,4 +301,106 @@ input:checked + .slider:before { transform: translateX(12px); }
     .sub-modal {
         max-width: 388px; /* 420 - 32 (márgenes laterales del container) */
     }
+}
+
+/* --- NUEVO LAYOUT REORDENADO --- */
+
+/* Header Logo (Arriba del todo) */
+.app-header-logo {
+    text-align: center;
+    margin: 20px 0 10px; /* Espacio arriba y abajo */
+    padding: 0 16px;
+}
+.app-header-logo h1 { 
+    font-size: 1.6rem; 
+    background: linear-gradient(135deg, #60a5fa, #a78bfa); 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; 
+    margin-bottom: 4px;
+}
+
+.card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.card-title {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.btn-refresh-small {
+   background: rgba(255,255,255,0.1);
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #22d3ee;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+.btn-refresh-small:active { transform: rotate(180deg); }
+
+.next-flight-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+/* Ficha Próximo Vuelo (Destacada) */
+.next-flight-card {
+    padding: 20px;
+    border-radius: 20px;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid rgba(34, 211, 238, 0.3); /* Borde cyan sutil */
+    box-shadow: 0 4px 20px rgba(34, 211, 238, 0.1);
+}
+.flight-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+    color: #f1f5f9;
+}
+.flight-detail-main {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #fff;
+    margin: 5px 0;
+}
+.flight-detail-sub {
+    font-size: 0.8rem;
+    color: #cbd5e1;
+}
+.status-badge-large {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Ficha Total Flights (Más compacta ahora) */
+.stat-card-total {
+    padding: 15px;
+    border-radius: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 80px;
+}
+
+/* Burbuja New Booking */
+.bubble-container {
+    align-self: center; /* Centrar burbuja */
+    margin-top: 5px;
 }
