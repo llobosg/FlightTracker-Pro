@@ -144,7 +144,7 @@
                       <div style="flex:1">
                         <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block; font-weight:bold;">Número de Vuelo *</label>
                         <input type="text" name="flight_number" class="input-booking" placeholder="Ej: LA600" required style="border-color:#22d3ee; font-weight:bold;">
-                        <div id="flight-search-status" style="font-size:0.7rem; color:#94a3b8; margin-bottom:12px; min-height:18px; font-style:italic;"></div>
+                        <div id="flight-search-status" style="font-size:0.75rem; color:#94a3b8; margin-bottom:12px; min-height:18px; font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%; display:block;"></div>
                       </div>
                       <div style="flex:1">
                         <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Aerolínea</label>
@@ -1052,18 +1052,21 @@
         checkDailyAlertsOnOpen();
     }
 
-    // 🔍 Función para buscar vuelo en AviationStack vía nuestro backend proxy
+        // 🔍 Función para buscar vuelo en AviationStack (ACTUALIZADA)
     async function searchFlightByNumber(flightNumber) {
         const statusEl = document.getElementById('flight-search-status');
         
         if (!flightNumber || flightNumber.length < 2) {
-            if (statusEl) statusEl.innerText = '';
+            if (statusEl) {
+                statusEl.innerText = '';
+                statusEl.className = '';
+            }
             return null;
         }
         
         if (statusEl) {
             statusEl.innerText = '🔍 Buscando información del vuelo...';
-            statusEl.style.color = '#94a3b8';
+            statusEl.className = 'searching'; // Clase para color gris
         }
         
         try {
@@ -1071,29 +1074,26 @@
             const data = await res.json();
             
             if (data.success && data.flight) {
-                if (statusEl) {
-                    statusEl.innerText = '✅ Vuelo encontrado • ' + (data.flight.airline || '');
-                    statusEl.style.color = '#4ade80';
-                }
+                // El texto se actualiza en fillFlightForm para mantener consistencia
                 return data.flight;
             } else {
                 if (statusEl) {
                     statusEl.innerText = '⚠️ Vuelo no encontrado. Completa manualmente.';
-                    statusEl.style.color = '#fbbf24';
+                    statusEl.className = 'warning'; // Clase para color amarillo
                 }
                 return null;
             }
         } catch (e) {
             if (statusEl) {
                 statusEl.innerText = '❌ Error de conexión. Completa manualmente.';
-                statusEl.style.color = '#ef4444';
+                statusEl.className = 'error'; // Clase para color rojo
             }
             console.error("Error buscando vuelo:", e);
             return null;
         }
     }
 
-    // 📝 Función para rellenar formulario con datos de la API
+        // 📝 Función para rellenar formulario con datos de la API (ACTUALIZADA)
     function fillFlightForm(flightData) {
         if (!flightData) return;
         
@@ -1104,16 +1104,26 @@
         if (flightData.origin) form.elements['origin_airport'].value = flightData.origin;
         if (flightData.destination) form.elements['destination_airport'].value = flightData.destination;
         
-        // Formatear fechas para input datetime-local (YYYY-MM-DDTHH:mm)
+        // Formatear fechas para input datetime-local (YYYY-MM-DDTHH:mm) - FORMATO 24H
         if (flightData.scheduled_departure) {
             const depDate = new Date(flightData.scheduled_departure);
+            // Ajustar timezone offset para que se muestre la hora local correcta
             depDate.setMinutes(depDate.getMinutes() - depDate.getTimezoneOffset());
+            // Formato ISO sin segundos para datetime-local: YYYY-MM-DDTHH:mm
             form.elements['departure_time'].value = depDate.toISOString().slice(0, 16);
         }
         if (flightData.scheduled_arrival) {
             const arrDate = new Date(flightData.scheduled_arrival);
             arrDate.setMinutes(arrDate.getMinutes() - arrDate.getTimezoneOffset());
             form.elements['arrival_time'].value = arrDate.toISOString().slice(0, 16);
+        }
+        
+        // Actualizar el texto de estado con la aerolínea en la MISMA línea
+        const statusEl = document.getElementById('flight-search-status');
+        if (statusEl) {
+            // Usar texto compacto: emoji + mensaje + aerolínea, todo en una línea
+            statusEl.innerText = `✅ Vuelo encontrado • ${flightData.airline || 'Desconocida'}`;
+            statusEl.className = 'success'; // Para aplicar color verde vía CSS
         }
     }
 

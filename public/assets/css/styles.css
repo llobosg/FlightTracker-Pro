@@ -469,3 +469,41 @@ input:checked + .slider:before { transform: translateX(12px); }
     font-weight: bold;
     text-shadow: 0 1px 2px rgba(0,0,0,0.8);
 }
+/* --- FORMULARIO: FORMATO 24H Y TEXTO COMPACTO --- */
+
+/* Forzar formato 24h en inputs datetime-local */
+.input-booking[type="datetime-local"] {
+    color: #fff;
+    /* Forzar formato 24h en navegadores que lo soporten */
+    accent-color: #22d3ee;
+}
+
+/* Ocultar el selector AM/PM en navegadores que lo muestran */
+.input-booking[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* Texto de estado del buscador de vuelos: UNA SOLA LÍNEA */
+#flight-search-status {
+    font-size: 0.75rem !important;
+    color: #94a3b8 !important;
+    margin-bottom: 12px !important;
+    min-height: 18px !important;
+    font-style: italic;
+    
+    /* CLAVE: Evitar saltos de línea */
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    
+    /* Asegurar que ocupe el ancho completo disponible */
+    width: 100% !important;
+    display: block !important;
+}
+
+/* Colores específicos para estados */
+#flight-search-status.searching { color: #94a3b8 !important; }
+#flight-search-status.success { color: #4ade80 !important; font-weight: 500 !important; }
+#flight-search-status.warning { color: #fbbf24 !important; }
+#flight-search-status.error { color: #ef4444 !important; }
