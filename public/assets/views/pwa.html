@@ -546,7 +546,7 @@
                             </div>
                             <div class="flight-status">
                                 <div class="seat-small">${f.seat_number||'--'}</div>
-                                ${f.flight_number ? `<button onclick="updateFlightStatus(${f.id}, '${f.flight_number}')" style="background:none; border:none; color:#22d3ee; cursor:pointer; font-size:1.2rem; margin-left:5px;" title="Actualizar Estado"></button>` : ''}
+                                ${f.flight_number ? `<button onclick="updateFlightStatus(${f.id}, '${f.flight_number}')" style="background:none; border:none; color:#22d3ee; cursor:pointer; font-size:1.2rem; margin-left:8px; display:flex; align-items:center;" title="Actualizar Estado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></button>` : ''}
                             </div>
                         </div>`;
                     });
