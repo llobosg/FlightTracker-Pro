@@ -97,24 +97,32 @@ body {
 .nav-icon svg { width: 24px; height: 24px; stroke: #fff; opacity: 0.9; cursor: pointer; }
 .logout-icon svg { stroke: #ef4444 !important; }
 
-/* --- CONTENEDOR PRINCIPAL (Restaurando Layout Anterior) --- */
+/* Contenedor Principal: Define el ancho máximo global */
 .main-content {
     display: flex;
     justify-content: space-between;
-    padding: 20px 16px; /* Espacio lateral */
+    /* Espacio lateral uniforme */
+    padding: 0 16px; 
     gap: 15px;
     align-items: stretch;
-    /* Limitar ancho total en pantallas grandes para que parezca un móvil */
-    max-width: 100%; 
+    
+    /* CLAVE: Ancho máximo igual al de los submodales para consistencia */
+    width: 100%;
+    max-width: 388px; /* Mismo ancho aprox que tus submodales */
+    margin: 0 auto;   /* Centrar horizontalmente */
 }
-/* Grupo de Fichas (Izquierda) */
+
+/* Espacio superior general (entre Barra Superior y Fichas) */
 .stats-group {
-    flex: 7; /* Ocupa la mayor parte del espacio */
+    flex: 7;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 15px; /* Espacio ENTRE Próximo Vuelo y Total Flights */
+    
+    /* CLAVE: Espacio superior igual al gap interno (15px) para separar de la barra */
+    margin-top: 15px; 
 }
-/* FICHA TOTAL FLIGHTS (Estilo Original Recuperado) */
+/* Ficha Total Flights */
 .stat-card.large {
     flex: 1;
     padding: 20px;
@@ -125,27 +133,55 @@ body {
     justify-content: center;
     min-height: 100px;
     
-    /* GLASSMORPHISM CLÁSICO */
-    background: rgba(30, 41, 59, 0.6); /* Fondo azulado semitransparente */
-    backdrop-filter: blur(10px); /* Efecto borroso detrás */
+    /* Glassmorphism */
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1); /* Borde sutil */
+    border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-} border: 1px solid rgba(255,255,255,0.1); 
+    
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .stat-label { font-size: 0.75rem; color: #cbd5e1; }
 .stat-value { font-size: 1.5rem; font-weight: bold; }
 .highlight-cyan { color: #22d3ee; text-shadow: 0 0 10px rgba(34, 211, 238, 0.6); }
 .trip-list { font-size: 0.7rem; color: #94a3b8; line-height: 1.4; }
 
-.bubble-container { flex: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.bubble-btn { 
-    width: 70px; height: 70px; border-radius: 50%; 
-    background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); 
-    border: 2px solid rgba(255,255,255,0.5); 
-    display: flex; align-items: center; justify-content: center; cursor: pointer; 
+/* Contenedor del Botón Burbuja */
+.bubble-container {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+    /* CLAVE: Margen superior igual al de stats-group (15px) para alineación */
+    margin-top: 15px; 
+}
+.bubble-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
 .bubble-btn svg { width: 35px; height: 35px; stroke: #fff; }
-.bubble-label { margin-top: 8px; font-size: 0.65rem; color: #fff; text-align: center; font-weight: bold; }
+.bubble-label {
+    margin-top: 8px;
+    font-size: 0.65rem;
+    color: #fff;
+    text-align: center;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
 
 /* =========================================
    SUB-MODALS (LÓGICA UNIFICADA)
@@ -319,6 +355,7 @@ input:checked + .slider:before { transform: translateX(12px); }
     margin-bottom: 4px;
 }
 
+/* Estilos internos de la ficha (sin cambios mayores, solo asegurando ajuste) */
 .card-header-row {
     display: flex;
     justify-content: space-between;
@@ -347,6 +384,12 @@ input:checked + .slider:before { transform: translateX(12px); }
 }
 .btn-refresh-small:active { transform: rotate(180deg); }
 
+.next-flight-details-mini {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 
 .next-flight-details {
     display: flex;
@@ -370,21 +413,25 @@ input:checked + .slider:before { transform: translateX(12px); }
     flex-direction: column;
     gap: 4px;
 }
-/* NUEVA FICHA PRÓXIMO VUELO (Compacta pero con Glass) */
+/* Ficha Próximo Vuelo */
 .next-flight-card-compact {
     padding: 15px;
     border-radius: 20px;
-    min-height: 110px; /* Un poco más alta que la de total */
+    min-height: 110px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     
-    /* GLASSMORPHISM IGUAL QUE LAS OTRAS */
+    /* Glassmorphism */
     background: rgba(30, 41, 59, 0.6);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(34, 211, 238, 0.3); /* Borde cyan suave para destacar */
+    border: 1px solid rgba(34, 211, 238, 0.3);
     box-shadow: 0 4px 15px rgba(34, 211, 238, 0.1);
+    
+    /* Asegurar que no se salga del contenedor */
+    width: 100%; 
+    box-sizing: border-box;
 }
 .flight-detail-row {
     display: flex;
