@@ -273,10 +273,6 @@ input:checked + .slider:before { transform: translateX(12px); }
 }
 .btn-logout-small:hover { background: rgba(239, 68, 68, 0.4); }
 
-/* Input datetime-local fix */
-.input-booking[type="datetime-local"] { color: #fff; }
-.input-booking[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-
 /* =========================================
    MEDIA QUERIES
    ========================================= */
