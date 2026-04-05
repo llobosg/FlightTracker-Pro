@@ -140,11 +140,16 @@
             <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Aerolínea</label>
             <input type="text" name="airline_name" class="input-booking" placeholder="Ej: LATAM" required>
             
-            <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Código Reserva</label>
-            <input type="text" name="reservation_code" class="input-booking" placeholder="ABC123" maxlength="10" required>
-            
-            <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Número de Vuelo</label>
-            <input type="text" name="flight_number" class="input-booking" placeholder="LA600">
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1">
+                    <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Código Reserva</label>
+                    <input type="text" name="reservation_code" class="input-booking" placeholder="ABC123" maxlength="10" required>
+                </div>
+                <div style="flex:1">
+                    <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Número de Vuelo</label>
+                    <input type="text" name="flight_number" class="input-booking" placeholder="LA600">
+              </div>
+            </div>
             
             <div style="display:flex; gap:10px;">
                 <div style="flex:1">
@@ -310,169 +315,277 @@
       document.querySelectorAll('.sub-modal').forEach(m => m.classList.add('hidden'));
     }
 
-    // Lógica New Booking
+        // --- LÓGICA DE VALIDACIÓN Y FORMULARIO ---
+
+    // 1. Autocompletado Origen/Destino (SCL <-> CLO)
+    const originInput = document.querySelector('input[name="origin_airport"]');
+    const destInput = document.querySelector('input[name="destination_airport"]');
+
+    if (originInput && destInput) {
+        originInput.addEventListener('change', function() {
+            const val = this.value.toUpperCase();
+            if (val === 'SCL') destInput.value = 'CLO';
+            if (val === 'CLO') destInput.value = 'SCL';
+        });
+
+        destInput.addEventListener('change', function() {
+            const val = this.value.toUpperCase();
+            if (val === 'SCL') originInput.value = 'CLO';
+            if (val === 'CLO') originInput.value = 'SCL';
+        });
+        
+        // Forzar mayúsculas al escribir
+        [originInput, destInput].forEach(input => {
+            input.addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+        });
+    }
+
+    // 2. Función Principal de Guardar con Validaciones
     async function handleNewBooking(event) {
         event.preventDefault();
         const form = event.target;
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
-        const token = localStorage.getItem('token');
+
+        // Normalizar datos
+        data.origin_airport = data.origin_airport.toUpperCase();
+        data.destination_airport = data.destination_airport.toUpperCase();
         
-        if (!token) { alert('Sesión expirada. Por favor inicia sesión.'); location.reload(); return; }
+        // Validación Básica de Ruta (Solo SCL-CLO o CLO-SCL por ahora)
+        const validRoutes = ['SCL-CLO', 'CLO-SCL'];
+        const currentRoute = `${data.origin_airport}-${data.destination_airport}`;
+        if (!validRoutes.includes(currentRoute)) {
+            alert('Por ahora solo permitimos rutas entre SCL y CLO.');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) { alert('Sesión expirada.'); location.reload(); return; }
 
         const btn = form.querySelector('button[type="submit"]');
         const originalText = btn.innerText;
-        btn.innerText = 'Guardando...';
+        btn.innerText = 'Validando...';
         btn.disabled = true;
 
         try {
+            // PASO A: Verificar Duplicados Exactos (Misma fecha/hora/ruta)
+            // Primero obtenemos los vuelos actuales del usuario para validar localmente (más rápido)
+            const resCheck = await fetch('/api/flights', { headers: { 'Authorization': `Bearer ${token}` }});
+            const resultCheck = await resCheck.json();
+            const existingFlights = resultCheck.data || [];
+
+            const depTime = new Date(data.departure_time);
+            
+            // Buscar duplicado exacto
+            const isDuplicate = existingFlights.some(f => 
+                f.origin_airport === data.origin_airport &&
+                f.destination_airport === data.destination_airport &&
+                Math.abs(new Date(f.departure_time) - depTime) < (60 * 1000) // Diferencia menor a 1 minuto
+            );
+
+            if (isDuplicate) {
+                btn.innerText = originalText;
+                btn.disabled = false;
+                if (!confirm('⚠️ Ya existe un vuelo registrado con esta misma ruta y hora aproximada.\n¿Deseas agregarlo de todas formas?')) {
+                    return; // Cancelar si el usuario dice NO
+                }
+            }
+
+            // PASO B: Validar Vuelo de Retorno (Solo si es ruta principal)
+            // Lógica: Si voy SCL->CLO el Lunes, ¿hay retorno CLO->SCL esa misma semana?
+            let missingReturnWarning = false;
+            
+            // Definir rango de la semana (Lunes a Domingo de la fecha de salida)
+            const startOfWeek = new Date(depTime);
+            startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1); // Lunes
+            startOfWeek.setHours(0,0,0,0);
+            
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(endOfWeek.getDate() + 6); // Domingo
+            endOfWeek.setHours(23,59,59,999);
+
+            // Buscar retorno inverso dentro de esa semana
+            const hasReturn = existingFlights.some(f => {
+                const fDate = new Date(f.departure_time);
+                return f.origin_airport === data.destination_airport && // Origen es mi destino
+                       f.destination_airport === data.origin_airport &&   // Destino es mi origen
+                       fDate >= startOfWeek && fDate <= endOfWeek;
+            });
+
+            if (!hasReturn) {
+                if (!confirm(`ℹ️ No se encontró un vuelo de RETORNO (${data.destination_airport} → ${data.origin_airport}) registrado para esta misma semana.\n¿Deseas continuar guardando solo el ida?`)) {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+            }
+
+            // PASO C: Si pasa las validaciones, GUARDAR
+            btn.innerText = 'Guardando...';
+            
             const response = await fetch('/api/flights', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(data)
             });
+            
             const result = await response.json();
+            
             if (response.ok) {
                 alert('✅ Vuelo agregado correctamente');
                 closeAllModals();
                 form.reset();
-                loadFlights();
+                loadFlights(); // Recargar lista
             } else {
                 alert('Error: ' + (result.message || 'No se pudo guardar'));
             }
+
         } catch (error) {
             console.error(error);
-            alert('Error de conexión al guardar.');
+            alert('Error de conexión al validar/guardar.');
         } finally {
             btn.innerText = originalText;
             btn.disabled = false;
         }
     }
 
-        // Función para cargar vuelos REALES desde la API
+    // 3. Función loadFlights Actualizada (Agrupación por Mes y Formato Semana)
     async function loadFlights() {
         const token = localStorage.getItem('token');
         if (!token) return;
 
         try {
-            // Llamada a la API real que creamos en index.php
-            const res = await fetch('/api/flights', { 
-                headers: { 'Authorization': `Bearer ${token}` } 
-            });
-            
-            if (!res.ok) throw new Error('Error al obtener datos');
-            
+            const res = await fetch('/api/flights', { headers: { 'Authorization': `Bearer ${token}` }});
+            if (!res.ok) throw new Error('Error API');
             const result = await res.json();
-            const flights = result.data || []; // Tu API devuelve { success: true, data: [...] }
+            const flights = result.data || [];
 
-            // --- ACTUALIZAR HOME (Fichas Superiores) ---
-            
-            // 1. Total Flights Booked
+            // Ordenar cronológicamente
+            flights.sort((a, b) => new Date(a.departure_time) - new Date(b.departure_time));
+
+            // --- ACTUALIZAR HOME ---
             document.getElementById('total-flights-count').innerText = flights.length;
-            
-            // 2. Upcoming Trips (Mostrar solo los próximos 2)
-            const listContainer = document.getElementById('upcoming-trips-list');
-            listContainer.innerHTML = '';
-            
-            if (flights.length === 0) {
-                listContainer.innerHTML = '<div style="color:#64748b; font-style:italic;">Sin vuelos próximos</div>';
-            } else {
-                // Ordenar por fecha de salida
-                flights.sort((a, b) => new Date(a.departure_time) - new Date(b.departure_time));
-                
+            const upcomingList = document.getElementById('upcoming-trips-list');
+            upcomingList.innerHTML = '';
+            if(flights.length > 0) {
                 flights.slice(0, 2).forEach(f => {
-                    const date = new Date(f.departure_time).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-                    listContainer.innerHTML += `<div>${f.origin_airport} → ${f.destination_airport} • ${date}</div>`;
+                    const d = new Date(f.departure_time).toLocaleDateString('es-ES', {day:'numeric', month:'short'});
+                    upcomingList.innerHTML += `<div>${f.origin_airport} → ${f.destination_airport} • ${d}</div>`;
                 });
-            }
-
-            // --- ACTUALIZAR MODAL CALENDARIO (Todos los vuelos) ---
-            const flightsModalList = document.getElementById('flights-list-container');
-            flightsModalList.innerHTML = '';
-            
-            if (flights.length === 0) {
-                flightsModalList.innerHTML = '<p style="text-align:center; color:#cbd5e1; margin-top:20px;">No tienes vuelos registrados aún.</p>';
             } else {
-                flights.forEach(f => {
-                    const depDate = new Date(f.departure_time);
-                    const timeStr = depDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    const dateStr = depDate.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
-                    
-                    // Determinar estado visual (si falta menos de 24h o ya pasó)
-                    const now = new Date();
-                    const isPast = depDate < now;
-                    const isChecked = f.check_in_status == 1;
-                    
-                    let statusBadge = '';
-                    if (isChecked) {
-                        statusBadge = `<div class="badge-checked"><span class="check-icon">✓</span> Checked In</div>`;
-                    } else if (isPast) {
-                        statusBadge = `<div style="color:#94a3b8; font-size:0.7rem;">Finalizado</div>`;
-                    } else {
-                        statusBadge = `<button class="btn-checkin-small" onclick="alert('Función Check-in para vuelo ${f.flight_number}')">Check-in</button>`;
-                    }
-
-                    flightsModalList.innerHTML += `
-                    <div class="flight-row">
-                        <div class="airline-logo-small" style="background:${getAirlineColor(f.airline_name)}; color:white;">${f.airline_name ? f.airline_name.substring(0,3).toUpperCase() : 'AIR'}</div>
-                        <div class="flight-details">
-                            <div class="flight-route-bold">${f.origin_airport} <span style="color:#cbd5e1">→</span> ${f.destination_airport}</div>
-                            <div class="flight-time-small">${dateStr} • ${timeStr} ${f.flight_number ? '• '+f.flight_number : ''}</div>
-                            ${f.gate_info ? `<div style="font-size:0.65rem; color:#fbbf24;">Puerta: ${f.gate_info}</div>` : ''}
-                        </div>
-                        <div class="flight-status">
-                            ${statusBadge}
-                            <div class="seat-small">${f.seat_number || '--'}</div>
-                        </div>
-                    </div>`;
-                });
+                upcomingList.innerHTML = '<span style="color:#64748b">Sin vuelos</span>';
             }
 
-            // --- ACTUALIZAR MODAL SEMANA (Próximos 7 días) ---
-            const weekList = document.getElementById('week-flights-list');
-            weekList.innerHTML = '';
+            // --- ACTUALIZAR MODAL CALENDARIO (Agrupado por Mes) ---
+            const calendarContainer = document.getElementById('flights-list-container');
+            calendarContainer.innerHTML = '';
+
+            if (flights.length === 0) {
+                calendarContainer.innerHTML = '<p style="text-align:center;color:#cbd5e1;margin-top:20px;">Sin vuelos registrados.</p>';
+            } else {
+                // Agrupar por Mes-Año
+                const grouped = {};
+                flights.forEach(f => {
+                    const d = new Date(f.departure_time);
+                    const key = d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }); // Ej: "abril de 2024"
+                    if (!grouped[key]) grouped[key] = [];
+                    grouped[key].push(f);
+                });
+
+                // Renderizar grupos
+                for (const [monthName, monthFlights] of Object.entries(grouped)) {
+                    // Capitalizar primera letra del mes
+                    const formattedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+                    
+                    let htmlGroup = `<h4 style="color:#22d3ee; margin: 15px 0 10px 0; text-transform:uppercase; font-size:0.9rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px;">${formattedMonth}</h4>`;
+                    
+                    monthFlights.forEach(f => {
+                        const d = new Date(f.departure_time);
+                        const time = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                        const dateShort = d.toLocaleDateString('es-ES', {weekday:'short', day:'numeric'});
+                        
+                        htmlGroup += `
+                        <div class="flight-row">
+                            <div class="airline-logo-small" style="background:${getAirlineColor(f.airline_name)}">${f.airline_name ? f.airline_name.substring(0,3).toUpperCase() : 'FLT'}</div>
+                            <div class="flight-details">
+                                <div class="flight-route-bold">${f.origin_airport} → ${f.destination_airport}</div>
+                                <div class="flight-time-small">${dateShort} • ${time} ${f.flight_number?'• '+f.flight_number:''}</div>
+                            </div>
+                            <div class="flight-status">
+                                <div class="seat-small">${f.seat_number||'--'}</div>
+                            </div>
+                        </div>`;
+                    });
+                    
+                    calendarContainer.innerHTML += htmlGroup;
+                }
+            }
+
+            // --- ACTUALIZAR MODAL ESTA SEMANA (Formato Compacto) ---
+            const weekContainer = document.getElementById('week-flights-list');
+            weekContainer.innerHTML = '';
             
+            const now = new Date();
             const nextWeek = new Date();
-            nextWeek.setDate(nextWeek.getDate() + 7);
+            nextWeek.setDate(now.getDate() + 7);
             
-            const upcomingFlights = flights.filter(f => {
+            const weekFlights = flights.filter(f => {
                 const d = new Date(f.departure_time);
-                return d >= new Date() && d <= nextWeek;
+                return d >= now && d <= nextWeek;
             });
 
-            if (upcomingFlights.length === 0) {
-                weekList.innerHTML = '<div style="padding:10px; color:#64748b; text-align:center;">No hay vuelos esta semana</div>';
+            if (weekFlights.length === 0) {
+                weekContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#64748b;">No hay vuelos esta semana</div>';
             } else {
-                upcomingFlights.forEach(f => {
-                    const d = new Date(f.departure_time);
-                    const dayName = d.toLocaleDateString('es-ES', { weekday: 'short' }).toUpperCase();
-                    const time = d.toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' });
-                    
-                    weekList.innerHTML += `
-                    <div class="flight-row-simple">
-                        <span>${dayName} ${d.getDate()}: ${f.origin_airport} → ${f.destination_airport} <small style="color:#94a3b8">(${time})</small></span>
-                        <span class="highlight-cyan">${f.flight_number || ''}</span>
-                    </div>`;
+                // Agrupar también por mes dentro de la semana si cruza mes
+                const weekGrouped = {};
+                weekFlights.forEach(f => {
+                     const d = new Date(f.departure_time);
+                     const mKey = d.toLocaleDateString('es-ES', { month: 'long' });
+                     if(!weekGrouped[mKey]) weekGrouped[mKey] = [];
+                     weekGrouped[mKey].push(f);
                 });
+
+                for (const [mName, mFlights] of Object.entries(weekGrouped())) {
+                     const mNameFmt = mName.charAt(0).toUpperCase() + mName.slice(1);
+                     weekContainer.innerHTML += `<h5 style="color:#94a3b8; font-size:0.8rem; margin:10px 0 5px;">${mNameFmt}</h5>`;
+                     
+                     mFlights.forEach(f => {
+                         const d = new Date(f.departure_time);
+                         const dayName = d.toLocaleDateString('es-ES', { weekday: 'short' }).toUpperCase(); // LUN
+                         const dayNum = d.getDate();
+                         const time = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                         
+                         weekContainer.innerHTML += `
+                         <div class="flight-row-simple" style="flex-direction:column; align-items:flex-start; gap:2px; padding:8px 10px;">
+                             <div style="display:flex; justify-content:space-between; width:100%;">
+                                 <span style="font-weight:bold; color:#fff;">${f.origin_airport} → ${f.destination_airport}</span>
+                                 <span style="font-size:0.75rem; color:#22d3ee;">${f.flight_number||''}</span>
+                             </div>
+                             <div style="display:flex; justify-content:space-between; width:100%; font-size:0.75rem; color:#cbd5e1;">
+                                 <span>${dayName} ${dayNum} • ${time}</span>
+                                 <span>${f.check_in_status==1 ? '✓ Checked In' : 'Check-in'}</span>
+                             </div>
+                         </div>`;
+                     });
+                }
             }
 
         } catch (e) {
-            console.error("Error cargando vuelos reales:", e);
-            // Fallback visual si falla la API
-            document.getElementById('upcoming-trips-list').innerHTML = '<div style="color:#ef4444;">Error de conexión</div>';
+            console.error("Error cargando vuelos", e);
         }
     }
-
-    // Helper para colores de aerolíneas
+    
+    // Helper colores
     function getAirlineColor(name) {
         if (!name) return '#334155';
         const n = name.toLowerCase();
         if (n.includes('latam')) return '#005587';
         if (n.includes('sky')) return '#ff6600';
-        if (n.includes('jet') || n.includes('smart')) return '#ff0066';
-        if (n.includes('delta')) return '#003366';
-        if (n.includes('iberia')) return '#cc0000';
-        return '#3b82f6'; // Default azul
+        if (n.includes('jet')) return '#ff0066';
+        return '#3b82f6';
     }
 
     function logout() {
