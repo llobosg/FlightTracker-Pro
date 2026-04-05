@@ -138,27 +138,55 @@
           <div class="modal-header"><span>Nuevo Vuelo</span><button class="icon-btn-home" onclick="closeAllModals()">✕</button></div>
           <div class="modal-content-scroll">
               <form id="booking-form" onsubmit="handleNewBooking(event)">
-                <!-- Inputs... (igual que antes) -->
-                <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Aerolínea</label>
-                <input type="text" name="airline_name" class="input-booking" placeholder="Ej: LATAM" required>
-                <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Código Reserva</label>
-                <input type="text" name="reservation_code" class="input-booking" placeholder="ABC123" maxlength="10" required>
-                <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Número de Vuelo</label>
-                <input type="text" name="flight_number" class="input-booking" placeholder="LA600">
-                <div style="display:flex; gap:10px;">
-                    <div style="flex:1"><label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Origen</label><input type="text" name="origin_airport" class="input-booking" placeholder="SCL" required></div>
-                    <div style="flex:1"><label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Destino</label><input type="text" name="destination_airport" class="input-booking" placeholder="CJC" required></div>
-                </div>
-                <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Salida</label>
-                <input type="datetime-local" name="departure_time" class="input-booking" required>
-                <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Llegada</label>
-                <input type="datetime-local" name="arrival_time" class="input-booking" required>
-                <div style="display:flex; gap:10px;">
-                    <div style="flex:1"><label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Asiento</label><input type="text" name="seat_number" class="input-booking" placeholder="12A"></div>
-                    <div style="flex:1"><label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Puerta</label><input type="text" name="gate_info" class="input-booking" placeholder="B12"></div>
-                </div>
-                <button type="submit" class="btn-add-flight">Guardar Reserva</button>
-              </form>
+                  <!-- 🔹 PRIMERO: Número de Vuelo (Trigger para autocompletado) -->
+                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block; font-weight:bold;">Número de Vuelo *</label>
+                  <input type="text" name="flight_number" class="input-booking" placeholder="Ej: LA600" required style="border-color:#22d3ee; font-weight:bold;">
+                  <div id="flight-search-status" style="font-size:0.7rem; color:#94a3b8; margin-bottom:12px; min-height:18px; font-style:italic;"></div>
+                  
+                  <!-- 🔹 Campos autocompletados (inicialmente readonly, editables con botón) -->
+                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Aerolínea</label>
+                  <input type="text" name="airline_name" class="input-booking" placeholder="Se completará automáticamente" readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
+                  
+                  <div style="display:flex; gap:10px;">
+                      <div style="flex:1">
+                          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Origen *</label>
+                          <input type="text" name="origin_airport" class="input-booking" placeholder="SCL" required readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
+                      </div>
+                      <div style="flex:1">
+                          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Destino *</label>
+                          <input type="text" name="destination_airport" class="input-booking" placeholder="CJC" required readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
+                      </div>
+                  </div>
+
+                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Salida</label>
+                  <input type="datetime-local" name="departure_time" class="input-booking" readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
+                  
+                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Llegada</label>
+                  <input type="datetime-local" name="arrival_time" class="input-booking" readonly style="background:rgba(0,0,0,0.15); cursor:not-allowed;">
+                  
+                  <!-- 🔹 Botón para habilitar edición manual si la API falla o el usuario quiere corregir -->
+                  <button type="button" onclick="enableManualEdit()" style="background:none; border:none; color:#22d3ee; font-size:0.75rem; cursor:pointer; margin:10px 0 15px 0; display:flex; align-items:center; gap:5px; width:100%; justify-content:center;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    ✏️ Editar manualmente si es necesario
+                  </button>
+
+                  <!-- 🔹 Campos opcionales (siempre editables) -->
+                  <div style="display:flex; gap:10px; margin-top:10px;">
+                      <div style="flex:1">
+                          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Asiento</label>
+                          <input type="text" name="seat_number" class="input-booking" placeholder="12A">
+                      </div>
+                      <div style="flex:1">
+                          <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block;">Puerta</label>
+                          <input type="text" name="gate_info" class="input-booking" placeholder="B12">
+                      </div>
+                  </div>
+                  
+                  <label style="color:#cbd5e1; font-size:0.8rem; margin-bottom:5px; display:block; margin-top:10px;">Código Reserva (PNR)</label>
+                  <input type="text" name="reservation_code" class="input-booking" placeholder="ABC123" maxlength="10">
+
+                  <button type="submit" class="btn-add-flight" style="margin-top:20px;">✅ Guardar Reserva</button>
+                </form>
           </div>
         </div>
 
@@ -1012,6 +1040,188 @@
         
         // NUEVO: Verificar alertas al abrir
         checkDailyAlertsOnOpen();
+    }
+
+    // 🔍 Función para buscar vuelo en AviationStack vía nuestro backend proxy
+    async function searchFlightByNumber(flightNumber) {
+        const statusEl = document.getElementById('flight-search-status');
+        
+        if (!flightNumber || flightNumber.length < 2) {
+            if (statusEl) statusEl.innerText = '';
+            return null;
+        }
+        
+        if (statusEl) {
+            statusEl.innerText = '🔍 Buscando información del vuelo...';
+            statusEl.style.color = '#94a3b8';
+        }
+        
+        try {
+            const res = await fetch(`/api/search-flight?number=${encodeURIComponent(flightNumber.toUpperCase())}`);
+            const data = await res.json();
+            
+            if (data.success && data.flight) {
+                if (statusEl) {
+                    statusEl.innerText = '✅ Vuelo encontrado • ' + (data.flight.airline || '');
+                    statusEl.style.color = '#4ade80';
+                }
+                return data.flight;
+            } else {
+                if (statusEl) {
+                    statusEl.innerText = '⚠️ Vuelo no encontrado. Completa manualmente.';
+                    statusEl.style.color = '#fbbf24';
+                }
+                return null;
+            }
+        } catch (e) {
+            if (statusEl) {
+                statusEl.innerText = '❌ Error de conexión. Completa manualmente.';
+                statusEl.style.color = '#ef4444';
+            }
+            console.error("Error buscando vuelo:", e);
+            return null;
+        }
+    }
+
+    // 📝 Función para rellenar formulario con datos de la API
+    function fillFlightForm(flightData) {
+        if (!flightData) return;
+        
+        const form = document.getElementById('booking-form');
+        
+        // Rellenar campos autocompletados
+        if (flightData.airline) form.elements['airline_name'].value = flightData.airline;
+        if (flightData.origin) form.elements['origin_airport'].value = flightData.origin;
+        if (flightData.destination) form.elements['destination_airport'].value = flightData.destination;
+        
+        // Formatear fechas para input datetime-local (YYYY-MM-DDTHH:mm)
+        if (flightData.scheduled_departure) {
+            const depDate = new Date(flightData.scheduled_departure);
+            depDate.setMinutes(depDate.getMinutes() - depDate.getTimezoneOffset());
+            form.elements['departure_time'].value = depDate.toISOString().slice(0, 16);
+        }
+        if (flightData.scheduled_arrival) {
+            const arrDate = new Date(flightData.scheduled_arrival);
+            arrDate.setMinutes(arrDate.getMinutes() - arrDate.getTimezoneOffset());
+            form.elements['arrival_time'].value = arrDate.toISOString().slice(0, 16);
+        }
+    }
+
+    // ✏️ Función para habilitar edición manual de campos autocompletados
+    function enableManualEdit() {
+        const form = document.getElementById('booking-form');
+        const readonlyFields = ['airline_name', 'origin_airport', 'destination_airport', 'departure_time', 'arrival_time'];
+        
+        readonlyFields.forEach(fieldName => {
+            const field = form.elements[fieldName];
+            if (field) {
+                field.readOnly = false;
+                field.style.background = 'rgba(0,0,0,0.3)';
+                field.style.cursor = 'text';
+                field.style.borderColor = 'rgba(255,255,255,0.3)';
+            }
+        });
+        
+        showToast('✏️ Campos editables. Puedes modificar los datos si es necesario.', 'success');
+    }
+
+    // Listener inteligente para el campo flight_number (autocompletado)
+    document.addEventListener('DOMContentLoaded', () => {
+        const flightNumberInput = document.querySelector('input[name="flight_number"]');
+        let debounceTimer;
+        
+        if (flightNumberInput) {
+            flightNumberInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                const val = this.value.trim().toUpperCase();
+                
+                if (val.length >= 2) {
+                    debounceTimer = setTimeout(async () => {
+                        const flightData = await searchFlightByNumber(val);
+                        if (flightData) {
+                            fillFlightForm(flightData);
+                        }
+                    }, 800); // Esperar 800ms después de dejar de escribir
+                } else {
+                    const statusEl = document.getElementById('flight-search-status');
+                    if (statusEl) statusEl.innerText = '';
+                }
+            });
+            
+            // Forzar mayúsculas al escribir
+            flightNumberInput.addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+        }
+    });
+
+    // Modificar openBookingModal para preparar el formulario según modo
+    function openBookingModal(flightData = null) {
+        const modal = document.getElementById('modal-booking');
+        const form = document.getElementById('booking-form');
+        const title = modal.querySelector('.modal-header span');
+        
+        // Limpiar formulario y estado
+        form.reset();
+        const statusEl = document.getElementById('flight-search-status');
+        if (statusEl) statusEl.innerText = '';
+        
+        if (flightData) {
+            // === MODO EDICIÓN ===
+            isEditingMode = true;
+            currentFlightId = flightData.id;
+            title.innerText = "Editar Vuelo";
+            
+            // Rellenar con datos existentes
+            form.elements['airline_name'].value = flightData.airline_name || '';
+            form.elements['reservation_code'].value = flightData.reservation_code || '';
+            form.elements['flight_number'].value = flightData.flight_number || '';
+            form.elements['origin_airport'].value = flightData.origin_airport || '';
+            form.elements['destination_airport'].value = flightData.destination_airport || '';
+            
+            // Formatear fechas
+            if (flightData.departure_time) {
+                const depDate = new Date(flightData.departure_time);
+                depDate.setMinutes(depDate.getMinutes() - depDate.getTimezoneOffset());
+                form.elements['departure_time'].value = depDate.toISOString().slice(0, 16);
+            }
+            if (flightData.arrival_time) {
+                const arrDate = new Date(flightData.arrival_time);
+                arrDate.setMinutes(arrDate.getMinutes() - arrDate.getTimezoneOffset());
+                form.elements['arrival_time'].value = arrDate.toISOString().slice(0, 16);
+            }
+            form.elements['seat_number'].value = flightData.seat_number || '';
+            form.elements['gate_info'].value = flightData.gate_info || '';
+            
+            // Desbloquear todos los campos para edición
+            enableManualEdit();
+            
+        } else {
+            // === MODO NUEVO ===
+            isEditingMode = false;
+            currentFlightId = null;
+            title.innerText = "Nuevo Vuelo";
+            
+            // Bloquear campos autocompletados inicialmente
+            const autoFields = ['airline_name', 'origin_airport', 'destination_airport', 'departure_time', 'arrival_time'];
+            autoFields.forEach(fieldName => {
+                const field = form.elements[fieldName];
+                if (field) {
+                    field.readOnly = true;
+                    field.style.background = 'rgba(0,0,0,0.15)';
+                    field.style.cursor = 'not-allowed';
+                    field.style.borderColor = 'rgba(255,255,255,0.2)';
+                }
+            });
+            
+            // Enfocar el campo de número de vuelo para empezar a escribir
+            setTimeout(() => {
+                const flightInput = form.elements['flight_number'];
+                if (flightInput) flightInput.focus();
+            }, 300);
+        }
+        
+        modal.classList.remove('hidden');
     }
 </script>
 </body>

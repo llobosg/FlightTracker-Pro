@@ -453,32 +453,51 @@ elseif ($uri === '/api/search-flight' && $method === 'GET') {
     $apiKey = getenv('AVIATION_STACK_KEY');
     
     if (!$flightNum || !$apiKey) {
-        echo json_encode(['success' => false]);
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Faltan parámetros']);
         exit();
     }
 
+    // Consultar AviationStack
     $url = "https://api.aviationstack.com/v1/flights?access_key={$apiKey}&flight_iata={$flightNum}";
+    
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'FlightTracker-Pro/1.0');
     $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+
+    if ($httpCode !== 200 || !$response) {
+        error_log("AviationStack Error ($httpCode): $response");
+        echo json_encode(['success' => false, 'message' => 'Error consultando API externa']);
+        exit();
+    }
 
     $data = json_decode($response, true);
     
     if (isset($data['data']) && count($data['data']) > 0) {
         $f = $data['data'][0];
-        echo json_encode([
+        
+        // Extraer y formatear datos útiles
+        $result = [
             'success' => true,
             'flight' => [
-                'origin' => $f['departure']['iata'],
-                'destination' => $f['arrival']['iata'],
-                'airline' => $f['airline']['name'],
-                'scheduled_departure' => $f['departure']['scheduled']
+                'airline' => $f['airline']['name'] ?? null,
+                'flight_number' => $f['flight']['iata'] ?? $flightNum,
+                'origin' => $f['departure']['iata'] ?? null,
+                'destination' => $f['arrival']['iata'] ?? null,
+                'scheduled_departure' => $f['departure']['scheduled'] ?? null,
+                'scheduled_arrival' => $f['arrival']['scheduled'] ?? null,
+                'terminal_departure' => $f['departure']['terminal'] ?? null,
+                'terminal_arrival' => $f['arrival']['terminal'] ?? null,
             ]
-        ]);
+        ];
+        echo json_encode($result);
     } else {
-        echo json_encode(['success' => false]);
+        echo json_encode(['success' => false, 'message' => 'Vuelo no encontrado en base de datos de aerolíneas']);
     }
     exit();
 }
