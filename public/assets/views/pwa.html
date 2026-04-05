@@ -17,12 +17,6 @@
 </head>
 <body>
   <div class="app-container">
-    
-    <!-- Logo / Header Inicial -->
-    <div class="logo-header">
-      <h1>✈️ FlightTracker Pro</h1>
-      <p style="color: #df46c3; margin-top: 4px; font-size: 0.9rem;">Desarmar toboganes, crosscheck, reportar</p>
-    </div>
 
     <!-- Formulario de Registro -->
     <div id="register-form" class="card">
@@ -63,8 +57,8 @@
   
         <!-- 1. LOGO / TÍTULO (Ahora arriba del todo) -->
         <div class="app-header-logo">
-          <h1>✈️ FlightTracker Pro</h1>
-          <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 4px;">Desarmar toboganes, crosscheck, reportar</p>
+            <h1>✈️ FlightTracker Pro</h1>
+            <p style="color: #df46c3; margin-top: 4px; font-size: 0.9rem;">Desarmar toboganes, crosscheck, reportar</p>
         </div>
 
         <!-- 2. BARRA SUPERIOR DE NAVEGACIÓN (Bajada) -->
@@ -88,35 +82,38 @@
 
         <!-- 3. CONTENIDO PRINCIPAL REORDENADO -->
         <div class="main-content-reordered">
+          <div class="stats-group">
           
-          <!-- FICHA 1: PRÓXIMO VUELO (Detallado + Botón Actualizar) -->
-          <div class="glass-card next-flight-card">
-            <div class="card-header-row">
-              <span class="card-title">Próximo Vuelo</span>
-              <button onclick="refreshNextFlight()" class="btn-refresh-small" title="Actualizar Datos">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-              </button>
+            <!-- FICHA 1: PRÓXIMO VUELO (Detallado + Botón Actualizar) -->
+            <div class="glass-card next-flight-card-compact">
+                <div class="card-header-row">
+                  <span class="card-title">Próximo Vuelo</span>
+                  <button onclick="refreshNextFlight()" class="btn-refresh-small" title="Actualizar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                  </button>
+                </div>
+                <div id="next-flight-details" class="next-flight-details-mini">
+                  <!-- Se llena con JS -->
+                  <div style="font-size:0.8rem; color:#94a3b8;">Cargando...</div>
+                </div>
             </div>
-            
-            <div id="next-flight-details" class="next-flight-details">
-              <!-- Se llena dinámicamente con JS -->
-              <div style="text-align:center; color:#64748b; padding:20px;">Cargando próximo vuelo...</div>
+
+             <!-- FICHA ANTIGUA: Total Flights (Recuperando estilo) -->
+            <div class="glass-card stat-card large">
+              <span class="stat-label">Total Flights Booked</span>
+              <span class="stat-value highlight-cyan" id="total-flights-count">0</span>
             </div>
+
           </div>
 
-          <!-- FICHA 2: TOTAL FLIGHTS (Ahora abajo) -->
-          <div class="glass-card stat-card-total">
-            <span class="stat-label">Total Flights Booked</span>
-            <span class="stat-value highlight-cyan" id="total-flights-count">0</span>
-          </div>
-
-          <!-- FICHA 3: NEW BOOKING (Burbuja) -->
+          <!-- Grupo Derecho: Botón New Booking (Burbuja) -->
           <div class="bubble-container">
             <button class="bubble-btn" onclick="openBookingModal()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
             <span class="bubble-label">New<br>Booking</span>
           </div>
+
         </div>
 
         <!-- ... (El resto de los modales: modal-flights, modal-week, etc. se mantienen igual) ... -->
@@ -599,25 +596,25 @@
     // ==========================================
     // 2. FICHA PRÓXIMO VUELO (Nueva Ficha Principal)
     // ==========================================
-    function renderNextFlightCard(flights) {
+        function renderNextFlightCard(flights) {
         const container = document.getElementById('next-flight-details');
         if (!container) return;
 
-        // Buscar el próximo vuelo futuro
         const now = new Date();
+        // Buscar el próximo vuelo futuro
         const nextFlight = flights.find(f => new Date(f.departure_time) >= now) || flights[0];
 
         if (!nextFlight) {
-            container.innerHTML = `<div style="text-align:center; color:#64748b; padding:20px;">No hay vuelos próximos registrados.</div>`;
+            container.innerHTML = `<div style="text-align:center; color:#64748b; font-size:0.8rem; padding:10px;">Sin vuelos próximos</div>`;
             return;
         }
 
         const depDate = new Date(nextFlight.departure_time);
         const timeStr = depDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const dateStr = depDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+        // Fecha corta para ahorrar espacio
+        const dateStr = depDate.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }); 
         
-        // Determinar estado y color
-        let statusColor = '#fbbf24'; // Scheduled (Amarillo)
+        let statusColor = '#fbbf24'; 
         let statusText = 'Programado';
         
         if (nextFlight.status_api) {
@@ -628,24 +625,23 @@
         }
 
         const delayBadge = (nextFlight.delay_minutes && nextFlight.delay_minutes > 0) 
-            ? `<span style="color:#ef4444; font-size:0.8rem; font-weight:bold;">(+${nextFlight.delay_minutes} min)</span>` 
+            ? ` <span style="color:#ef4444; font-size:0.7rem;">(+${nextFlight.delay_minutes}m)</span>` 
             : '';
 
         container.innerHTML = `
             <div class="flight-detail-row">
-                <span style="font-size:1.2rem; font-weight:bold; color:#fff;">${nextFlight.airline_name || 'Aerolínea'} ${nextFlight.flight_number || ''}</span>
+                <span style="font-size:0.9rem; font-weight:bold; color:#fff; flex:1;">${nextFlight.flight_number || 'Vuelo'}</span>
                 <span class="status-badge-large" style="background:${statusColor}20; color:${statusColor}; border:1px solid ${statusColor}">${statusText}</span>
             </div>
             <div class="flight-detail-main">
-                ${nextFlight.origin_airport} <span style="color:#22d3ee">→</span> ${nextFlight.destination_airport} ${delayBadge}
+                ${nextFlight.origin_airport} <span style="color:#22d3ee">→</span> ${nextFlight.destination_airport}${delayBadge}
             </div>
-            <div class="flight-detail-row">
-                <span class="flight-detail-sub">📅 ${dateStr}</span>
-                <span class="flight-detail-sub" style="font-weight:bold; color:#fff;">⏰ ${timeStr}</span>
+            <div class="flight-detail-row" style="margin-top:2px;">
+                <span class="flight-detail-sub">📅 ${dateStr} • ⏰ ${timeStr}</span>
             </div>
-            <div class="flight-detail-row" style="margin-top:5px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
-                <span class="flight-detail-sub">💺 Asiento: ${nextFlight.seat_number || '--'}</span>
-                <span class="flight-detail-sub">🚪 Puerta: ${nextFlight.gate_info || 'Pendiente'}</span>
+             <div class="flight-detail-row" style="margin-top:4px; border-top:1px solid rgba(255,255,255,0.1); padding-top:4px;">
+                <span class="flight-detail-sub"> ${nextFlight.seat_number || '--'}</span>
+                <span class="flight-detail-sub">🚪 ${nextFlight.gate_info || 'Gate?'}</span>
             </div>
         `;
     }
