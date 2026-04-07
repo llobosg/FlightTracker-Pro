@@ -7,15 +7,30 @@
     padding: 0;
 }
 
+/* =========================================
+   BACKGROUND IMAGE OPTIMIZADO
+   ========================================= */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-image:linear-gradient(rgba(0,20,10,.40), rgba(0,30,15,.50)), url('/assets/images/screenshots/avion2.jpeg') center/cover no-repeat fixed;
+    /* Color de respaldo por si la imagen falla */
     background-color: #0f172a;
+    /* Imagen de fondo */
+    background-image: url('/assets/images/screenshots/avion2.jpg');
+    /* Configuración de fondo optimizada para nitidez */
     background-repeat: no-repeat;
     background-position: center center;
+    /* CLAVE: 'cover' mantiene proporción pero puede pixelar. 
+       Alternativa: usar '100% auto' si la imagen es vertical para móvil */
     background-size: cover;
-    /* Cambiado a scroll para evitar glitches en móviles */
-    background-attachment: scroll; 
+    /* Evitar que el fondo se mueva con scroll (mejor rendimiento en móvil) */
+    background-attachment: scroll;  
+    /* SUAVIZADO DE IMAGEN - Clave para evitar pixelado */
+    image-rendering: auto; /* Default, pero explícito */
+    image-rendering: -webkit-optimize-contrast; /* Safari/Chrome */
+    image-rendering: crisp-edges; /* Firefox */
+    image-rendering: pixelated; /* Fallback extremo */ 
+    /* Filtro sutil para mejorar contraste y percepción de nitidez */
+    filter: contrast(1.05) saturate(1.02);  
     color: #f1f5f9;
     min-height: 100vh;
     display: flex;
@@ -23,6 +38,53 @@ body {
     align-items: flex-start;
     padding: 20px 0;
     overflow-x: hidden;
+}
+
+/* =========================================
+   CAPA DE SUPERPOSICIÓN PARA MEJORAR LEGIBILIDAD
+   ========================================= */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Degradado sutil que oscurece ligeramente el fondo para que el texto resalte */
+    background: linear-gradient(
+        135deg, 
+        rgba(15, 23, 42, 0.15) 0%, 
+        rgba(15, 23, 42, 0.35) 50%, 
+        rgba(15, 23, 42, 0.15) 100%
+    );
+    pointer-events: none; /* No interferir con clicks */
+    z-index: -1; /* Detrás del contenido */
+}
+/* =========================================
+   OPTIMIZACIÓN PARA MÓVIL (Pantallas verticales)
+   ========================================= */
+@media (max-width: 768px) {
+    body {
+        /* En móvil, a veces 'contain' + centro se ve mejor que 'cover' */
+        background-size: cover;
+        background-position: center 20%; /* Enfocar ligeramente hacia arriba */       
+        /* Desactivar filtro en móvil para mejor rendimiento */
+        filter: none;
+    }
+}
+/* =========================================
+   OPTIMIZACIÓN PARA ESCRITORIO (Notebook)
+   ========================================= */
+@media (min-width: 769px) {
+    body {
+        /* En escritorio, asegurar que la imagen cubra bien el contenedor centrado */
+        background-size: cover;
+        background-position: center center;
+    }
+    .app-container {
+        /* Asegurar que el contenedor no recorte la imagen de fondo */
+        background: transparent !important;
+    }
 }
 
 /* Contenedor Principal (Móvil Flotante) */
