@@ -383,7 +383,7 @@ input:checked + .slider:before { transform: translateX(12px); }
 }
 .app-header-logo h1 { 
     font-size: 1.6rem; 
-    background: linear-gradient(135deg, #4e0442, #a462f5); 
+    background: linear-gradient(135deg, #4e0442, #5703bf); 
     -webkit-background-clip: text; 
     -webkit-text-fill-color: transparent; 
     margin-bottom: 4px;
