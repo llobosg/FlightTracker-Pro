@@ -225,21 +225,24 @@
     let isEditingMode = false;
     let currentFlightId = null;
 
-        // ==========================================
+    // ==========================================
     // 🗄️ FUNCIONES DE CACHÉ (Definidas PRIMERO)
     // ==========================================
-    const FLIGHT_CACHE_KEY = 'flight_tracker_api_cache';
-    const CACHE_EXPIRY_HOURS = 24;
+    // 🗄️ Caché inteligente con rotación de keys
+    const FLIGHT_CACHE_KEY = 'flight_tracker_api_cache_v2';
+    const CACHE_EXPIRY_HOURS = 48; // Extender a 48h para vuelos programados
 
     function getCachedFlight(flightNumber) {
         try {
             const cache = JSON.parse(localStorage.getItem(FLIGHT_CACHE_KEY) || '{}');
             const entry = cache[flightNumber.toUpperCase()];
             if (!entry) return null;
+            
             const now = Date.now();
             const expiry = entry.timestamp + (CACHE_EXPIRY_HOURS * 60 * 60 * 1000);
+            
             if (now < expiry) {
-                console.log(`📦 Caché hit para ${flightNumber}`);
+                console.log(`📦 Caché hit para ${flightNumber} (Key #${entry.keyUsed || '?'})`);
                 return entry.data;
             } else {
                 delete cache[flightNumber.toUpperCase()];
@@ -249,11 +252,16 @@
         } catch (e) { return null; }
     }
 
-    function setCachedFlight(flightNumber, flightData) {
+    function setCachedFlight(flightNumber, flightData, keyIndex = null) {
         try {
             const cache = JSON.parse(localStorage.getItem(FLIGHT_CACHE_KEY) || '{}');
-            cache[flightNumber.toUpperCase()] = { data: flightData, timestamp: Date.now() };
+            cache[flightNumber.toUpperCase()] = { 
+                data: flightData, 
+                timestamp: Date.now(),
+                keyUsed: keyIndex // Para saber qué key generó este caché
+            };
             localStorage.setItem(FLIGHT_CACHE_KEY, JSON.stringify(cache));
+            console.log(`💾 Caché guardada para ${flightNumber} (Key #${keyIndex || '?'})`);
         } catch (e) { console.error('Cache save error:', e); }
     }
 
@@ -310,7 +318,7 @@
     // ==========================================
     // 🔍 BÚSQUEDA DE VUELO (OpenSky + Caché)
     // ==========================================
-    async function searchFlightByNumber(flightNumber) {
+        async function searchFlightByNumber(flightNumber) {
         const statusEl = document.getElementById('flight-search-status');
         
         if (!flightNumber || flightNumber.length < 2) {
@@ -318,7 +326,7 @@
             return null;
         }
         
-        // 1. Buscar en caché
+        // 1️⃣ Buscar en caché primero
         const cached = getCachedFlight(flightNumber);
         if (cached) {
             if (statusEl) {
@@ -328,7 +336,7 @@
             return cached;
         }
         
-        // 2. Consultar API
+        // 2️⃣ Consultar API con rotación de keys (backend se encarga)
         if (statusEl) {
             statusEl.innerText = '🔍 Buscando...';
             statusEl.className = 'searching';
@@ -339,24 +347,35 @@
             const data = await res.json();
             
             if (data.success && data.flight) {
-                setCachedFlight(flightNumber, data.flight);
+                // Guardar en caché con el índice de key usada (si viene en la respuesta)
+                setCachedFlight(flightNumber, data.flight, data.key_index);
+                
                 if (statusEl) {
-                    statusEl.innerText = `✅ ${data.flight.airline || 'Encontrado'}`;
+                    const airline = data.flight.airline || 'Encontrado';
+                    const keyInfo = data.key_index ? ` [Key #${data.key_index}]` : '';
+                    statusEl.innerText = `✅ ${airline}${keyInfo}`;
                     statusEl.className = 'success';
                 }
-                return data.flight; // ✅ RETORNAR LOS DATOS
+                return data.flight;
             } else {
                 if (statusEl) {
-                    statusEl.innerText = 'ℹ️ Vuelo futuro. Completa manualmente.';
-                    statusEl.className = 'warning';
+                    // Mensajes específicos según el error
+                    if (res.status === 429) {
+                        statusEl.innerText = '⚠️ Límite API alcanzado. Completa manualmente.';
+                        statusEl.className = 'warning';
+                    } else {
+                        statusEl.innerText = 'ℹ️ Vuelo no encontrado. Completa manualmente.';
+                        statusEl.className = 'warning';
+                    }
                 }
                 return null;
             }
         } catch (e) {
             if (statusEl) {
-                statusEl.innerText = '❌ Error. Completa manualmente.';
+                statusEl.innerText = '❌ Error de conexión. Completa manualmente.';
                 statusEl.className = 'error';
             }
+            console.error("Error buscando vuelo:", e);
             return null;
         }
     }

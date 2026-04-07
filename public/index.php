@@ -447,7 +447,7 @@ elseif ($uri === '/api/get-today-alerts' && $method === 'GET') {
     exit();
 }
 
-// J. BUSCAR VUELO POR NÚMERO (OpenSky Network - Gratis)
+// J. BUSCAR VUELO POR NÚMERO (AviationStack con Rotación de Keys)
 elseif ($uri === '/api/search-flight' && $method === 'GET') {
     $flightNum = strtoupper(trim($_GET['number'] ?? ''));
     
@@ -457,69 +457,109 @@ elseif ($uri === '/api/search-flight' && $method === 'GET') {
         exit();
     }
 
-    // OpenSky: Buscar por callsign (número de vuelo en mayúsculas)
-    // Nota: OpenSky devuelve vuelos REALES/RECIENTES, no programados futuros
-    $url = "https://opensky-network.org/api/flights/all?callsign={$flightNum}";
+    // Lista de keys en orden de prioridad (cascada)
+    $apiKeys = [
+        getenv('AVIATION_STACK_KEY'),
+        getenv('AVIATION_STACK_KEY2'),
+        getenv('AVIATION_STACK_KEY3'),
+        getenv('AVIATION_STACK_KEY4'),
+        getenv('AVIATION_STACK_KEY5')
+    ];
     
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    curl_setopt($ch, CURLOPT_USERAGENT, 'FlightTracker-Pro/1.0');
+    // Filtrar keys vacías
+    $apiKeys = array_filter($apiKeys);
     
-    // Opcional: Usar credenciales si OpenSky las requiere en el futuro
-    $clientId = getenv('OPENSKY_CLIENT_ID');
-    $clientSecret = getenv('OPENSKY_CLIENT_SECRET');
-    if ($clientId && $clientSecret) {
-        curl_setopt($ch, CURLOPT_USERPWD, "{$clientId}:{$clientSecret}");
-    }
-    
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    if ($httpCode !== 200 || !$response) {
-        error_log("OpenSky Error ($httpCode): $response");
-        echo json_encode(['success' => false, 'message' => 'Error consultando OpenSky']);
+    if (empty($apiKeys)) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'No hay API keys configuradas']);
         exit();
     }
 
-    $data = json_decode($response, true);
+    $lastError = null;
     
-    // OpenSky devuelve array de vuelos (históricos/recientes)
-    if (is_array($data) && count($data) > 0) {
-        $f = $data[0]; // Tomar el más reciente
+    // 🔁 Intentar con cada key en cascada
+    foreach ($apiKeys as $index => $apiKey) {
+        $url = "https://api.aviationstack.com/v1/flights?access_key={$apiKey}&flight_iata={$flightNum}";
         
-        // Mapear datos de OpenSky a nuestro formato
-        // Nota: OpenSky usa códigos ICAO (4 letras) no IATA (3 letras)
-        $origin = $f['departure_airport'] ?? null; // Ej: SCEL
-        $destination = $f['arrival_airport'] ?? null; // Ej: SCCF
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'FlightTracker-Pro/1.0');
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        // Decodificar respuesta
+        $data = json_decode($response, true);
         
-        // Convertir ICAO a IATA si es posible (mapeo básico)
-        $icaoToIata = [
-            'SCEL' => 'SCL', 'SCCF' => 'CJC', 'SCSE' => 'LSC', 
-            'SCTE' => 'ZCO', 'SCFA' => 'IQQ', 'SCAT' => 'ARI',
-            'SCIP' => 'IPC', 'SCRM' => 'PMC', 'SCCI' => 'PUQ'
-        ];
+        // ✅ ÉXITO: La API devolvió datos válidos
+        if ($httpCode === 200 && isset($data['data']) && is_array($data['data'])) {
+            if (count($data['data']) > 0) {
+                $f = $data['data'][0];
+                
+                echo json_encode([
+                    'success' => true,
+                    'flight' => [
+                        'airline' => $f['airline']['name'] ?? null,
+                        'flight_number' => $f['flight']['iata'] ?? $flightNum,
+                        'origin' => $f['departure']['iata'] ?? null,
+                        'destination' => $f['arrival']['iata'] ?? null,
+                        'scheduled_departure' => $f['departure']['scheduled'] ?? null,
+                        'scheduled_arrival' => $f['arrival']['scheduled'] ?? null,
+                        'terminal_departure' => $f['departure']['terminal'] ?? null,
+                        'terminal_arrival' => $f['arrival']['terminal'] ?? null,
+                        'gate_departure' => $f['departure']['gate'] ?? null,
+                        'gate_arrival' => $f['arrival']['gate'] ?? null,
+                    ],
+                    'key_index' => $index + 1 // Para debug: saber qué key funcionó
+                ]);
+                exit();
+            } else {
+                // La API respondió pero no encontró el vuelo
+                echo json_encode([
+                    'success' => false, 
+                    'message' => 'Vuelo no encontrado en AviationStack'
+                ]);
+                exit();
+            }
+        }
         
-        echo json_encode([
-            'success' => true,
-            'flight' => [
-                'airline' => null, // OpenSky no siempre incluye nombre de aerolínea
-                'flight_number' => $f['callsign'] ?? $flightNum,
-                'origin' => $icaoToIata[$origin] ?? $origin,
-                'destination' => $icaoToIata[$destination] ?? $destination,
-                'scheduled_departure' => $f['first_seen'] ? date('c', $f['first_seen']) : null,
-                'scheduled_arrival' => $f['last_seen'] ? date('c', $f['last_seen']) : null,
-                'is_real_time' => true // Indicador para frontend
-            ]
-        ]);
-    } else {
-        echo json_encode([
-            'success' => false, 
-            'message' => 'Vuelo no encontrado. OpenSky solo muestra vuelos reales/recientes, no programados futuros.'
-        ]);
+        // ❌ ERROR: Verificar si es límite alcanzado para seguir con la siguiente key
+        $error = $data['error'] ?? null;
+        if ($error && $error['code'] === 'usage_limit_reached') {
+            error_log("AviationStack Key #".($index+1)." limit reached. Trying next...");
+            $lastError = 'limit';
+            continue; // Probar con la siguiente key
+        }
+        
+        // Otro tipo de error HTTP
+        if ($httpCode >= 400) {
+            error_log("AviationStack HTTP $httpCode with Key #".($index+1));
+            $lastError = 'http_'.$httpCode;
+            continue;
+        }
+        
+        // Error de parsing o respuesta inesperada
+        $lastError = 'unknown';
     }
+    
+    // 🚫 Todas las keys fallaron
+    error_log("All AviationStack keys exhausted. Last error: $lastError");
+    
+    $messages = [
+        'limit' => 'Límite de consultas alcanzado en todas las API keys. Intenta más tarde.',
+        'http_401' => 'Error de autenticación con las API keys.',
+        'http_429' => 'Demasiadas solicitudes. Intenta más tarde.',
+        'http_500' => 'Error interno del servidor de AviationStack.',
+        'unknown' => 'Error al consultar la API de vuelos.'
+    ];
+    
+    http_response_code($lastError === 'limit' ? 429 : 503);
+    echo json_encode([
+        'success' => false, 
+        'message' => $messages[$lastError] ?? 'Error al consultar vuelos. Intenta más tarde.'
+    ]);
     exit();
 }
 
